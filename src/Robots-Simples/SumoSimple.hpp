@@ -58,6 +58,7 @@ class SumoSimple : public SumoBase{
 		SumoSimple(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec, unsigned int TGiroMiliSec);
 
 		//Para agregas mas sensores, recuerda que ya tenemos los INF y SUS de adelante heredados
+		
 		virtual void AddInfraAtras(uint8_t pin)     { AddInfra(1,pin);}
 		virtual void AddInfraIzquierda(uint8_t pin) { AddInfra(2,pin);}
 		virtual void AddInfraDerecha(uint8_t pin)   { AddInfra(3,pin);}

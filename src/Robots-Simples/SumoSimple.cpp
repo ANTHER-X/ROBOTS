@@ -63,34 +63,36 @@ void SumoSimple::MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &
 void SumoSimple::MoverPorInfrarrojos(unsigned long &timer, bool &used){
 
     if(!used){
-        for(unsigned int i=0; i<Infrarrojos.size(); i++){
+        #if USE_IR == 1
+            for(unsigned int i=0; i<Infrarrojos.size(); i++){
 
-            //Si detecta el borde quiere decir que nos "Salimos"
-            //si detecta por delante, nos movemos hacia atras
-            if(Infrarrojos[i].ID == 0 && Infrarrojos[i].Estado){
-                SimpleAccion(used, timer);
-                MDelAtrs(Motores, false);
-                Serial.println("Topamos con un borde delante, moviendo hacia Atras");
+                //Si detecta el borde quiere decir que nos "Salimos"
+                //si detecta por delante, nos movemos hacia atras
+                if(Infrarrojos[i].ID == 0 && Infrarrojos[i].Estado){
+                    SimpleAccion(used, timer);
+                    MDelAtrs(Motores, false);
+                    Serial.println("Topamos con un borde delante, moviendo hacia Atras");
+                }
+                //si detecta por Atras, nos movemos hacia Adelante
+                else if(Infrarrojos[i].ID == 1 && Infrarrojos[i].Estado){
+                    SimpleAccion(used, timer);
+                    MDelAtrs(Motores, true);
+                    Serial.println("Topamos con un borde Atras, moviendo hacia Delante");
+                }
+                //si detecta por la Izquierda, giramos hacia la derecha
+                else if(Infrarrojos[i].ID == 2 && Infrarrojos[i].Estado){
+                    SimpleAccion(used, timer);
+                    MDerIzq(Motores, true);
+                    Serial.println("Topamos con un borde Izquierdo, Girando hacia la Derecha");
+                }
+                //si detecta por la Derecha, giramos hacia la Izquierda
+                else if(Infrarrojos[i].ID == 3 && Infrarrojos[i].Estado){
+                    SimpleAccion(used, timer);
+                    MDerIzq(Motores, false);
+                    Serial.println("Topamos con un borde Derecho, Girando hacia la Izquierda");
+                }
             }
-            //si detecta por Atras, nos movemos hacia Adelante
-            else if(Infrarrojos[i].ID == 1 && Infrarrojos[i].Estado){
-                SimpleAccion(used, timer);
-                MDelAtrs(Motores, true);
-                Serial.println("Topamos con un borde Atras, moviendo hacia Delante");
-            }
-            //si detecta por la Izquierda, giramos hacia la derecha
-            else if(Infrarrojos[i].ID == 2 && Infrarrojos[i].Estado){
-                SimpleAccion(used, timer);
-                MDerIzq(Motores, true);
-                Serial.println("Topamos con un borde Izquierdo, Girando hacia la Derecha");
-            }
-            //si detecta por la Derecha, giramos hacia la Izquierda
-            else if(Infrarrojos[i].ID == 3 && Infrarrojos[i].Estado){
-                SimpleAccion(used, timer);
-                MDerIzq(Motores, false);
-                Serial.println("Topamos con un borde Derecho, Girando hacia la Izquierda");
-            }
-        }
+        #endif
     }
     else if( (millis() - timer) >= (TGiro/4) ){
         Serial.println("Movimiento Finalizado");
@@ -99,6 +101,7 @@ void SumoSimple::MoverPorInfrarrojos(unsigned long &timer, bool &used){
     }
 
 }
+
 
 SumoSimple::SumoSimple(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec, unsigned int TGiroMiliSec)
 : SumoBase(Velocidad, VelocidadGiro, _DistAtaq, TRecMiliSec, TGiroMiliSec){}

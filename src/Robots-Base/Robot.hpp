@@ -2,9 +2,10 @@
 
 #include <Arduino.h>
 #include <ArduinoSTL.h>
+#include "../Config.hpp"
+#include "../Dependencias/Sensores.hpp"
 
 #pragma once
-#include "../Dependencias/Sensores.hpp"
 
 class Robot{
 	protected:

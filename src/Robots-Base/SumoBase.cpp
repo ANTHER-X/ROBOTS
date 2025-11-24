@@ -34,18 +34,26 @@ void SumoBase::UsarAllSUS(){
         MedirSUS(UltraSonicos[i]);
 }
 
-
 //toma el estado de los infrarrojos
-void SumoBase::ActivaInfrarrojo(Infrarrojo &INF){ INF.Estado = digitalRead(INF.Pin) == LOW;}
+void SumoBase::ActivaInfrarrojo(Infrarrojo &INF){
+    #if USE_IR == 1
+        INF.Estado = digitalRead(INF.Pin) == LOW;
+    #endif
+}
 bool SumoBase::UsaInfrarrojo(Infrarrojo &INF){
-    ActivaInfrarrojo(INF);
-    return INF.Estado;
+    #if USE_IR == 1
+        ActivaInfrarrojo(INF);
+        return INF.Estado;
+    #else 
+        return false;
+    #endif
 }
 void SumoBase::UsaAllInfrarrojo(){
-    for(unsigned int i=0; i<Infrarrojos.size(); i++)
-        ActivaInfrarrojo(Infrarrojos[i]);
+    #if USE_IR == 1
+        for(unsigned int i=0; i<Infrarrojos.size(); i++)
+            ActivaInfrarrojo(Infrarrojos[i]);
+    #endif
 }
-
 
 
 void SumoBase::MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &atUsed, bool &usUsed){
@@ -70,20 +78,23 @@ void SumoBase::MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &at
     }
 }
 
+
 void SumoBase::MoverPorInfrarrojos(unsigned long &timer, bool &used){
-    for(unsigned int i=0; i<Infrarrojos.size(); i++){
-        
-        //si detecta el borde
-        if(Infrarrojos[i].ID == 0){
-            Serial.println("Nos salimos!!!");
-            MDelAtrs(Motores,false);//atras
-            timer = millis(); //iniciamos donde comenzo hacia atras
-            used = true;//decimos que se mueve hacia atras
-        } 
-    }
-    
-    //si ya pasaron Nseg moviendose hacia atras
-    if(used && (millis() - timer) >= TRec) used = false;//decimos que ya no movemos hacia atras
+    #if USE_IR == 1
+        for(unsigned int i=0; i<Infrarrojos.size(); i++){
+            
+            //si detecta el borde
+            if(Infrarrojos[i].ID == 0){
+                Serial.println("Nos salimos!!!");
+                MDelAtrs(Motores,false);//atras
+                timer = millis(); //iniciamos donde comenzo hacia atras
+                used = true;//decimos que se mueve hacia atras
+            } 
+        }
+
+        //si ya pasaron Nseg moviendose hacia atras
+        if(used && (millis() - timer) >= TRec) used = false;//decimos que ya no movemos hacia atras
+    #endif
 }
 
 
@@ -107,15 +118,18 @@ void SumoBase::FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAcc
 }
 
 void SumoBase::Ataque(bool &ataque, bool &infUsed, unsigned long &timeAtaque, unsigned long &timeInf){
+    
     //si aun esta atacando y topamos con la barrera detenemos el ataque y retrocedemos
-    if(ataque && millis() - timeAtaque > TRec && Infrarrojos[0].Estado == true){
-        ConfigVelocidad(Motores, Vel);
-        MDelAtrs(Motores,false);
-        ataque = false;
-        infUsed = true;
-        timeInf = millis();
-        Serial.println("Atacando... Pero nos salimos!!!");
-    }
+    #if USE_IR == 1
+        if(ataque && millis() - timeAtaque > TRec && Infrarrojos[0].Estado == true){
+            ConfigVelocidad(Motores, Vel);
+            MDelAtrs(Motores,false);
+            ataque = false;
+            infUsed = true;
+            timeInf = millis();
+            Serial.println("Atacando... Pero nos salimos!!!");
+        }
+    #endif
 }
 
 
@@ -134,18 +148,24 @@ void SumoBase::AddSUS(uint8_t id, uint8_t triger, uint8_t echo){
 
 //Define los infrarrojos
 void SumoBase::AddInfra(uint8_t id, uint8_t pin){
-    if(TomaInfrarrojoByID(id) != nullptr) return; //si ya existe el ID, no hacemos nada
-    Serial.println("Sensor INF agregado");
-    Infrarrojo IF = {0};
-    IF.ID = id;
-    IF.Pin = pin; pinMode(IF.Pin, INPUT);
+    #if USE_IR == 1
+        if(TomaInfrarrojoByID(id) != nullptr) return; //si ya existe el ID, no hacemos nada
+        Serial.println("Sensor INF agregado");
+        Infrarrojo IF = {0};
+        IF.ID = id;
+        IF.Pin = pin; pinMode(IF.Pin, INPUT);
+    #endif
 }
 
 Infrarrojo *SumoBase::TomaInfrarrojoByID(int ID){
+    
     Infrarrojo *infraPTR = nullptr;
-    auto itinfraPTR = std::find_if(Infrarrojos.begin(), Infrarrojos.end(), [ID](const Infrarrojo &inf){ return inf.ID == ID;});
 
-    if(itinfraPTR != Infrarrojos.end()) infraPTR = &(*itinfraPTR);
+    #if USE_IR == 1
+        auto itinfraPTR = std::find_if(Infrarrojos.begin(), Infrarrojos.end(), [ID](const Infrarrojo &inf){ return inf.ID == ID;});
+
+        if(itinfraPTR != Infrarrojos.end()) infraPTR = &(*itinfraPTR);
+    #endif
 
     return infraPTR;
 }
@@ -169,7 +189,13 @@ SumoBase::SumoBase(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, 
     RGiro = random(0,2);
 }
 
-void SumoBase::AddInfraAdelante(uint8_t pin){ AddInfra(0,pin);}
+
+    void SumoBase::AddInfraAdelante(uint8_t pin){
+        #if USE_IR == 1 
+            AddInfra(0,pin);
+        #endif
+    }
+
 
 void SumoBase::AddSUSAdelante(uint8_t triger, uint8_t echo){ AddSUS(0, triger, echo);}
 
