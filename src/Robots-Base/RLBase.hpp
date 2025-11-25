@@ -1,7 +1,6 @@
 //Incluimos el Robot base, esto para poder mover nuestros motores
 #include "Robot.hpp"
 #include "../Dependencias/Utilidades.hpp"
-#include <ArduinoSTL.h>
 
 #pragma once
 

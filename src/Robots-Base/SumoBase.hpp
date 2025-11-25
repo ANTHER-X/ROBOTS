@@ -1,6 +1,5 @@
 
 #include <Arduino.h>
-#include <ArduinoSTL.h>
 #include <algorithm>
 #include "Robot.hpp"
 
@@ -32,9 +31,7 @@ class SumoBase : public Robot{
         //metodos privados
         //captura la distancia en CM
 		void MedirSUS(UltraSonico &US);
-
 		int TomarDistUS(UltraSonico &US);
-
 		void UsarAllSUS();
 
 		//Para sensores Infrarrojos

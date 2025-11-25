@@ -12,4 +12,5 @@ RLBServo::RLBServo(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int t
 : RLBase(velocidadRecta, velocidadGiro, timeGiro, timeRec){
     US = us;
     servo.attach(pinServo);
+    servo.write(90);
 }

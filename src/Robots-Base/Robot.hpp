@@ -1,7 +1,10 @@
 /*Base Class*/
-
 #include <Arduino.h>
-#include <ArduinoSTL.h>
+#if defined(__AVR__)
+	#include <ArduinoSTL.h>
+#else
+	#include <vector>
+#endif
 #include "../Config.hpp"
 #include "../Dependencias/Sensores.hpp"
 

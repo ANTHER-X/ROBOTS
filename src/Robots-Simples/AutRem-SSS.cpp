@@ -23,22 +23,15 @@ void AutRemSSS::MDerIzq(std::vector<Motor> &M, bool Der){
 }
 
 //Modificamos un poco
-void AutRemSSS::BTHMove(unsigned int recSeg = 1, char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z'){
-    //si le llega algun dato
-    if(BTH->available()){
+void AutRemSSS::BTHMove(unsigned int recSeg = 1, char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E'){
+    //Tomamos el tiempo en que llego
+    startTime = millis();
 
-        //Tomamos el tiempo en que llego
-        startTime = millis();
-        
-        //Tomamos el recorido real a segundos
-        recSeg *= 1000;
+    //Tomamos el recorido real a segundos
+    recSeg *= 1000;
 
-        //lo leemos
-        tecla = BTH->read();
-        
-        //Movemos los motores
-        TeclaMoveMotors(del,atr,der,izq,det);
-    }
+    //Movemos los motores
+    TeclaMoveMotors(del,atr,der,izq,det,spedMas,spedMenos);
 
     //nos detenemos si el tiempo termino
     if((millis() - startTime) > recSeg){
@@ -47,7 +40,7 @@ void AutRemSSS::BTHMove(unsigned int recSeg = 1, char del = 'W', char atr = 'S',
     }
 }
 
-AutRemSSS::AutRemSSS(uint8_t receivePin, uint8_t transmitPin, uint8_t pinServo, uint8_t velocidad) : AutoRemotoBase(receivePin, transmitPin, velocidad){
+AutRemSSS::AutRemSSS(uint8_t receivePin, uint8_t transmitPin, uint8_t pinServo, uint8_t velocidad) : AutoRemotoBase(velocidad, receivePin, transmitPin){
     //Tomamos el pin para el servo y lo movemos 90-grados
     servoControler.attach(pinServo);
     servoControler.write(90);

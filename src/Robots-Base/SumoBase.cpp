@@ -100,13 +100,15 @@ void SumoBase::MoverPorInfrarrojos(unsigned long &timer, bool &used){
 
 void SumoBase::FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAccion, unsigned long timeAtaque){
     //si ya no hay ataque y ya no vamos a retroceder (o que se haya usado algun infrarrojo) volvemos a girar
-    if(!ataque && infAccion && (millis() - timeInfAccion) > TRec){
-        ConfigVelocidad(Motores, VelGiro);
-        MDerIzq(Motores,RGiro);
-        infAccion = false;
-        ataque = false;
-        Serial.println("Buscando");
-    }
+    #if USE_IR == 1
+        if(!ataque && infAccion && (millis() - timeInfAccion) > TRec){
+            ConfigVelocidad(Motores, VelGiro);
+            MDerIzq(Motores,RGiro);
+            infAccion = false;
+            ataque = false;
+            Serial.println("Buscando");
+        }
+    #endif
 
     //si no detectamos la barrera y ya paso el tiempo de accion del ataque, detenemos el ataque
     if(ataque && (millis() - timeAtaque) > TRec){
@@ -186,17 +188,10 @@ SumoBase::SumoBase(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, 
     Vel = Velocidad;
     VelGiro = VelocidadGiro;
     DistAtaq = _DistAtaq;
-    RGiro = random(0,2);
+    //RGiro = random(0,2);
 }
 
-
-    void SumoBase::AddInfraAdelante(uint8_t pin){
-        #if USE_IR == 1 
-            AddInfra(0,pin);
-        #endif
-    }
-
-
+void SumoBase::AddInfraAdelante(uint8_t pin){ AddInfra(0,pin);}
 void SumoBase::AddSUSAdelante(uint8_t triger, uint8_t echo){ AddSUS(0, triger, echo);}
 
 void SumoBase::Add2Motors(Motor L1, Motor L2){

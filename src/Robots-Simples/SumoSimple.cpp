@@ -62,8 +62,9 @@ void SumoSimple::MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &
 
 void SumoSimple::MoverPorInfrarrojos(unsigned long &timer, bool &used){
 
-    if(!used){
-        #if USE_IR == 1
+    //Si hay sensores ultrasonicos o si los esta usando
+    #if USE_IR == 1
+        if(!used){
             for(unsigned int i=0; i<Infrarrojos.size(); i++){
 
                 //Si detecta el borde quiere decir que nos "Salimos"
@@ -92,14 +93,13 @@ void SumoSimple::MoverPorInfrarrojos(unsigned long &timer, bool &used){
                     Serial.println("Topamos con un borde Derecho, Girando hacia la Izquierda");
                 }
             }
-        #endif
-    }
-    else if( (millis() - timer) >= (TGiro/4) ){
-        Serial.println("Movimiento Finalizado");
-        used = false;
-        MDerIzq(Motores, RGiro);
-    }
-
+        }
+        else if( (millis() - timer) >= (TGiro/4) ){
+            Serial.println("Movimiento Finalizado");
+            used = false;
+            MDerIzq(Motores, RGiro);
+        }
+    #endif
 }
 
 
