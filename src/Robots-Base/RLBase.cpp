@@ -28,20 +28,15 @@ uint8_t RLBase::RetornaDistanciaMayor(){
     else return 2;
 }
 
-RLBase::RLBase(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec){
+RLBase::RLBase(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE){
     TRec = timeRec;
     TGiro = timeGiro;
     VRecta = velocidadRecta;
     VGiro = velocidadGiro;
+    motorType = typeMotor;
 
     DistDerecha = DistIzquierda = 1;
     DistDelante = 2;
-}
-
-/*Agregamos motores, puede agregar mas pero todas con la misma Confg*/
-void RLBase::AddMotors(std::vector<Motor> Mtrs) {
-    Motores = Mtrs;
-    for(unsigned int i=0; i<Motores.size(); i++) SetMotor(Motores[i], VRecta); 
 }
 
 //Metemos motores, asi ira la configuracion, primero izq, luego derecha
@@ -55,10 +50,14 @@ void RLBase::Add4Motors(Motor izq1, Motor der1, Motor izq2, Motor der2){
 //Usamos este metodo para movernos, Pienso yo que asi se debe mover asi que de aqui es lo mismo para los RLB
 void RLBase::Camina(){
     //Si no hay motores, no hacemos nada
-    if(Motores.size() <= 0) return;
+    if(Motores.size() <= 0){
+        DBG_PRINTLN("Sin motores. Regresando.");
+        return;
+    }
 
     //Tomamos las distancias
     uint8_t Movimiento = RetornaDistanciaMayor();
+    DBG_VALUE_LN("Distancia mayor tomada, retorno: ", Movimiento);
 
     //Nos movemos de forma ideterminada en esta funcion.
     bool OnMovement = false;
@@ -68,6 +67,9 @@ void RLBase::Camina(){
         
         //Si no estamos moviendonos, lo hacemos
         if(!OnMovement){    
+
+            DBG_PRINTLN("\n\nMoviendo.\n\n");
+
             //Centro
             if(Movimiento == 1) MDelAtrs(Motores, true);
             //Izquierda
@@ -81,6 +83,9 @@ void RLBase::Camina(){
         }
         //Si se esta moviendo y termino su tiempo, nos detenemos y volvemos a tomar tiempos
         else if( (millis() - Time) > TRec){
+            
+            DBG_PRINTLN("\n\nMoviento terminado.\n\n");
+
             OnMovement = false;
             MStop(Motores);
             Movimiento = RetornaDistanciaMayor();

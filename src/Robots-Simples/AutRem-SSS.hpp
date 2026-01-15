@@ -18,6 +18,6 @@ class AutRemSSS : public AutoRemotoBase{
         virtual void BTHMove(unsigned int recSeg, char del, char atr, char der, char izq, char det, char spedMas, char spedMenos) override;
 
     public:
-    AutRemSSS(uint8_t receivePin, uint8_t transmitPin, uint8_t pinServo, uint8_t velocidad);
+    AutRemSSS(uint8_t receivePin, uint8_t transmitPin, uint8_t pinServo, uint8_t velocidad, MotorDriverType typeMotor);
 
 };

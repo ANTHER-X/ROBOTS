@@ -15,6 +15,9 @@ class Robot{
 	
 		//Motores
         std::vector<Motor> Motores;
+		uint8_t Vel;
+		static constexpr size_t MAX_MOTORS = 32; //maximo de motores
+		MotorDriverType motorType;
 
 		//Para variar la velocidad de los motores
 		virtual void ConfigVelocidad(std::vector<Motor> &M, uint8_t vel);
@@ -30,7 +33,9 @@ class Robot{
 		
 		//Para definir los motores
 		virtual void SetMotor(Motor &M, uint8_t Vel);
-
+	public:
 		//Quiza agregre algo... Quiza.
+		//Si lees esto quiere decir que si agrege al menos un metodo... Que mal.
 		virtual void Camina(unsigned int TimeMinuts = -1){}
+		virtual void AddMotors(std::vector<Motor> Mtrs);
 };

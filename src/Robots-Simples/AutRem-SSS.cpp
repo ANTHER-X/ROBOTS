@@ -4,7 +4,10 @@
 //AutRemSSS::
 void AutRemSSS::AddMotors(std::vector<Motor> Mtrs){
     if(Mtrs.size() < 4){
-        Serial.println("Es Necesario mas de 4 Motores");
+        DBG_PRINTLN("Pocos motores. Es Necesario mas de 4 Motores. Regresando");
+        return;
+    }else if(Mtrs.size() > 32){
+        DBG_PRINTLN("Demaciados Motores. Es Necesario menos de 33 Motores. Regresando");
         return;
     }
     Motores = Mtrs;
@@ -20,6 +23,8 @@ void AutRemSSS::MDerIzq(std::vector<Motor> &M, bool Der){
 
     //Movemos el Servo dependiendo de a donde quiera ir
     servoControler.write( (Der ? (0):(180)) );
+
+    DBG_VALUE_LN("Giramos hacia: ", (Der ? "derecha" : "izquierda"));
 }
 
 //Modificamos un poco
@@ -40,7 +45,8 @@ void AutRemSSS::BTHMove(unsigned int recSeg = 1, char del = 'W', char atr = 'S',
     }
 }
 
-AutRemSSS::AutRemSSS(uint8_t receivePin, uint8_t transmitPin, uint8_t pinServo, uint8_t velocidad) : AutoRemotoBase(velocidad, receivePin, transmitPin){
+AutRemSSS::AutRemSSS(uint8_t receivePin, uint8_t transmitPin, uint8_t pinServo, uint8_t velocidad, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE)
+ :AutoRemotoBase(velocidad, receivePin, transmitPin, typeMotor){
     //Tomamos el pin para el servo y lo movemos 90-grados
     servoControler.attach(pinServo);
     servoControler.write(90);

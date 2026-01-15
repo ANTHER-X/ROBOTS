@@ -3,13 +3,12 @@
 #pragma once
 
 /*No iniciado*/
-class TankDriver{
+class TankDriver : public AutoRemotoBase{
+protected:
 
-    protected:
 
-    public:
-    TankDriver(){
-
-    }
+public:
+    TankDriver(uint8_t velocidad, uint8_t receivePin, uint8_t transmitPin, MotorDriverType typeMotor)
+    :AutoRemotoBase(velocidad, receivePin, transmitPin, typeMotor){}
 
 };

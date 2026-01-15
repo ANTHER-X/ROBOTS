@@ -18,43 +18,35 @@ void SumoSimple::MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &
                 ConfigVelocidad(Motores, Vel);
                 MDelAtrs(Motores,true);
                 SimpleAccion(atUsed, timer);
-                Serial.println("Atacando");
+                DBG_PRINTLN("Atacando");
             }
 
             //Si encontramos algo por atras giramos
             else if(UltraSonicos[i].ID == 1 && UltraSonicos[i].Cerca){
                 MDerIzq(Motores, RGiro);
                 SimpleAccion(usUsed, timerUS);
-                Serial.println("Girando");
+                DBG_PRINTLN("Girando");
             }
 
             //Si encontramos algo por la izquierda giramos
             else if(UltraSonicos[i].ID == 2 && UltraSonicos[i].Cerca){
                 MDerIzq(Motores,false);
                 SimpleAccion(usUsed, timerUS);
-                Serial.println("Girando a la izquierda");
+                DBG_PRINTLN("Girando a la izquierda");
             }
 
             //Si encontramos algo por la derecha giramos
             else if(UltraSonicos[i].ID == 3 && UltraSonicos[i].Cerca){
                 MDerIzq(Motores,true);
                 SimpleAccion(usUsed, timerUS);
-                Serial.println("Girando a la derecha");
+                DBG_PRINTLN("Girando a la derecha");
             }
         }
     }
-
-    //si esta atacando y finalizo el tiempo del ataque, terminamos el ataque
-    /*if(atUsed && (millis() - timer) >= TRec){
-        Serial.println("Ataque finalizado");
-        atUsed = false; //terminamos el ataque
-        ConfigVelocidad(Motores, VelGiro);
-        MDerIzq(Motores, RGiro);
-    }*/
-
+    
     //si estaba girando y termino de girar
     if(usUsed && (millis() - TGiro) >= timerUS){
-        Serial.println("Giro Finalizado");
+        DBG_PRINTLN("Giro Finalizado");
         usUsed = false;
         MDerIzq(Motores, RGiro);
     }
@@ -72,30 +64,30 @@ void SumoSimple::MoverPorInfrarrojos(unsigned long &timer, bool &used){
                 if(Infrarrojos[i].ID == 0 && Infrarrojos[i].Estado){
                     SimpleAccion(used, timer);
                     MDelAtrs(Motores, false);
-                    Serial.println("Topamos con un borde delante, moviendo hacia Atras");
+                    DBG_PRINTLN("Topamos con un borde delante, moviendo hacia Atras");
                 }
                 //si detecta por Atras, nos movemos hacia Adelante
                 else if(Infrarrojos[i].ID == 1 && Infrarrojos[i].Estado){
                     SimpleAccion(used, timer);
                     MDelAtrs(Motores, true);
-                    Serial.println("Topamos con un borde Atras, moviendo hacia Delante");
+                    DBG_PRINTLN("Topamos con un borde Atras, moviendo hacia Delante");
                 }
                 //si detecta por la Izquierda, giramos hacia la derecha
                 else if(Infrarrojos[i].ID == 2 && Infrarrojos[i].Estado){
                     SimpleAccion(used, timer);
                     MDerIzq(Motores, true);
-                    Serial.println("Topamos con un borde Izquierdo, Girando hacia la Derecha");
+                    DBG_PRINTLN("Topamos con un borde Izquierdo, Girando hacia la Derecha");
                 }
                 //si detecta por la Derecha, giramos hacia la Izquierda
                 else if(Infrarrojos[i].ID == 3 && Infrarrojos[i].Estado){
                     SimpleAccion(used, timer);
                     MDerIzq(Motores, false);
-                    Serial.println("Topamos con un borde Derecho, Girando hacia la Izquierda");
+                    DBG_PRINTLN("Topamos con un borde Derecho, Girando hacia la Izquierda");
                 }
             }
         }
         else if( (millis() - timer) >= (TGiro/4) ){
-            Serial.println("Movimiento Finalizado");
+            DBG_PRINTLN("Movimiento Finalizado");
             used = false;
             MDerIzq(Motores, RGiro);
         }
@@ -103,15 +95,9 @@ void SumoSimple::MoverPorInfrarrojos(unsigned long &timer, bool &used){
 }
 
 
-SumoSimple::SumoSimple(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec, unsigned int TGiroMiliSec)
-: SumoBase(Velocidad, VelocidadGiro, _DistAtaq, TRecMiliSec, TGiroMiliSec){}
-
-/*Metodos para agregar los motores, Recuerda que ya heredamos Add2Motors.
-AddMotors es para que inserte la cantidad de motores que decee*/
-void SumoSimple::AddMotors(std::vector<Motor> Mtrs) {
-    Motores = Mtrs;
-    for(unsigned int i=0; i<Motores.size(); i++) SetMotor(Motores[i], Vel); 
-}
+SumoSimple::SumoSimple(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec,
+    unsigned int TGiroMiliSec, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE):
+    SumoBase(Velocidad, VelocidadGiro, _DistAtaq, TRecMiliSec, TGiroMiliSec, typeMotor){}
 
 //Para agregar 4 motores o mas, le decimos el orden ->IZQ->DER->IZQ->DER
 void SumoSimple::Add4Motors(Motor izq1, Motor der1, Motor izq2, Motor der2){
@@ -124,6 +110,9 @@ void SumoSimple::Add4Motors(Motor izq1, Motor der1, Motor izq2, Motor der2){
 
 
 /*
+
+DADO QUE SE CAMBIO DE ENFOQUE, ESTO YA NO SE USARA PERO LO DEJO EN CASO DE QUE A ALGUIEN LE
+INTERESE O QUIERA CAMBIAR A LA FORMA ORIGINAL
 private:
 
 public:

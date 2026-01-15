@@ -24,10 +24,7 @@ class RLBase : public Robot{
     virtual void MoveDerIzq(bool derIzq);
 
     public:
-    RLBase(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec);
-    
-    /*Agregamos motores, puede agregar mas pero todas con la misma Confg*/
-    virtual void AddMotors(std::vector<Motor> Mtrs);
+    RLBase(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec, MotorDriverType typeMotor);
 
     //Metemos motores, asi ira la configuracion, primero izq, luego derecha
     virtual void Add4Motors(Motor izq1, Motor der1, Motor izq2, Motor der2);

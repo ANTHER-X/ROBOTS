@@ -24,6 +24,6 @@ class RLBServo : public RLBase{
 
     public:
     //para tener el Servo
-    RLBServo(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec, UltraSonico us, uint8_t pinServo);
+    RLBServo(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec, UltraSonico us, uint8_t pinServo, MotorDriverType typeMotor);
 
 };

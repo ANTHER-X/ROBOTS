@@ -7,13 +7,14 @@
 //captura la distancia en CM
 void SumoBase::MedirSUS(UltraSonico &US){
     digitalWrite(US.Pin[0], HIGH); //mando una senial de sonido
-    delayMicroseconds(100);
+    delayMicroseconds(10);
     digitalWrite(US.Pin[0], LOW); //detengo la senial
-    delayMicroseconds(50);
+    delayMicroseconds(5);
     Distcm = (pulseIn(US.Pin[1], HIGH) / 58.2);//medira en centimetros
-        
-    Serial.print("La distancia tomada es de: ");
-    Serial.println(Distcm);
+    
+    DBG_VALUE("Ultrasonico en pines: ", US.Pin[0]);
+    DBG_VALUE(", ", US.Pin[1]);
+    DBG_VALUE_LN(". La distancia tomada es de: ", Distcm);
         
     //verifica la distancia de esquivado
     if(Distcm <= DistAtaq && Distcm > 0){//si esta muy cerca
@@ -38,6 +39,8 @@ void SumoBase::UsarAllSUS(){
 void SumoBase::ActivaInfrarrojo(Infrarrojo &INF){
     #if USE_IR == 1
         INF.Estado = digitalRead(INF.Pin) == LOW;
+        DBG_VALUE("Pin Usado: ", INF.Pin);
+        DBG_VALUE_LN(". Estado tomado: ", INF.Estado);
     #endif
 }
 bool SumoBase::UsaInfrarrojo(Infrarrojo &INF){
@@ -61,20 +64,21 @@ void SumoBase::MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &at
 
         //Si estamos en el US de delante y hay algo en el punto de ataque y aun no ataca, atacamos
         if(UltraSonicos[i].ID == 0 && UltraSonicos[i].Cerca && !atUsed){
+            DBG_PRINTLN("\n\nATACANDO.\n\n");
             ConfigVelocidad(Motores, Vel);
             MDelAtrs(Motores,true);
             timer = millis(); //marcamos el inicio del ataque
             atUsed = true; //decimos que atacamos
-            Serial.println("Atacando");
         }
     }
 
     //si esta atacando y finalizo el tiempo del ataque, terminamos el ataque
     if(atUsed && (millis() - timer) >= TRec){
-        Serial.println("Ataque finalizado");
-    atUsed = false; //terminamos el ataque
+        DBG_PRINTLN("\n\nATAQUE FINALIZADO.\n\n");
+        atUsed = false; //terminamos el ataque
         ConfigVelocidad(Motores, VelGiro);
         MDerIzq(Motores, RGiro);
+        //MStop(Motores);
     }
 }
 
@@ -85,15 +89,18 @@ void SumoBase::MoverPorInfrarrojos(unsigned long &timer, bool &used){
             
             //si detecta el borde
             if(Infrarrojos[i].ID == 0){
-                Serial.println("Nos salimos!!!");
+                DBG_PRINTLN("\n\nNOS SALIMOS!!!.\n\n");
                 MDelAtrs(Motores,false);//atras
                 timer = millis(); //iniciamos donde comenzo hacia atras
                 used = true;//decimos que se mueve hacia atras
-            } 
+            }
         }
 
         //si ya pasaron Nseg moviendose hacia atras
-        if(used && (millis() - timer) >= TRec) used = false;//decimos que ya no movemos hacia atras
+        if(used && (millis() - timer) >= TRec){
+            DBG_PRINTLN("\n\nMOVIMIENTO DE IR TERMINADO.\n\n");
+            used = false; //decimos que ya no movemos hacia atras
+        }
     #endif
 }
 
@@ -106,7 +113,7 @@ void SumoBase::FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAcc
             MDerIzq(Motores,RGiro);
             infAccion = false;
             ataque = false;
-            Serial.println("Buscando");
+            DBG_PRINTLN("Buscando");
         }
     #endif
 
@@ -115,7 +122,7 @@ void SumoBase::FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAcc
         ConfigVelocidad(Motores, VelGiro);
         MDerIzq(Motores,RGiro);
         ataque = false;
-        Serial.println("Ataque finalizado");
+        DBG_PRINTLN("\n\nATAQUE FINALIZADO\n\n");
     }
 }
 
@@ -129,17 +136,20 @@ void SumoBase::Ataque(bool &ataque, bool &infUsed, unsigned long &timeAtaque, un
             ataque = false;
             infUsed = true;
             timeInf = millis();
-            Serial.println("Atacando... Pero nos salimos!!!");
+            DBG_PRINTLN("\n\nATACANDO... PERO NOS SALIMOS!!!\n\n");
         }
     #endif
 }
 
 
-
 //Los Ultrasonicos para los ojos
 void SumoBase::AddSUS(uint8_t id, uint8_t triger, uint8_t echo){
-    if(TomaUltrasonicoByID(id) != nullptr) return; //si ya existe el ID, no hacemos nada
-    Serial.println("Sensor US agregado");
+    if(TomaUltrasonicoByID(id) != nullptr){
+        DBG_VALUE("El sensor ultrasonico ya existe. Pin triger:", triger);
+        DBG_VALUE_LN(". Pin Echo: ", echo);
+        return; //si ya existe el ID, no hacemos nada
+    }
+    DBG_PRINTLN("Sensor US agregado");
     UltraSonico US = {0};
     US.ID = id;
     US.Pin[0] = triger; pinMode(US.Pin[0], OUTPUT);
@@ -151,8 +161,11 @@ void SumoBase::AddSUS(uint8_t id, uint8_t triger, uint8_t echo){
 //Define los infrarrojos
 void SumoBase::AddInfra(uint8_t id, uint8_t pin){
     #if USE_IR == 1
-        if(TomaInfrarrojoByID(id) != nullptr) return; //si ya existe el ID, no hacemos nada
-        Serial.println("Sensor INF agregado");
+        if(TomaInfrarrojoByID(id) != nullptr){
+        DBG_VALUE_LN("El sensor infrarrojo ya existe. Pin:", pin);
+            return; //si ya existe el ID, no hacemos nada
+        }
+        DBG_PRINTLN("Sensor INF agregado");
         Infrarrojo IF = {0};
         IF.ID = id;
         IF.Pin = pin; pinMode(IF.Pin, INPUT);
@@ -181,13 +194,14 @@ UltraSonico *SumoBase::TomaUltrasonicoByID(int ID){
     return susPTR;
 }
 
-SumoBase::SumoBase(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec, unsigned int TGiroMiliSec){
+SumoBase::SumoBase(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec, unsigned int TGiroMiliSec, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE){
     
     TGiro = TGiroMiliSec;
     TRec = TRecMiliSec;
     Vel = Velocidad;
     VelGiro = VelocidadGiro;
     DistAtaq = _DistAtaq;
+    motorType = typeMotor;
     //RGiro = random(0,2);
 }
 
@@ -199,7 +213,7 @@ void SumoBase::Add2Motors(Motor L1, Motor L2){
     SetMotor(L2,Vel); Motores.push_back(L2);
 }
 
-void SumoBase::Camina(unsigned int TimeMinuts = 0){
+void SumoBase::Camina(unsigned int TimeSeconds = 0){
     if(Motores.size() != 0){
         
         //tomamos un puntero al elemento deceado
@@ -211,6 +225,7 @@ void SumoBase::Camina(unsigned int TimeMinuts = 0){
         
         //variables locales que se que solo se inician minimo una vez
         unsigned long Time = 0, inicio = millis();
+        TimeSeconds*=1000;
         
         //para accionar los Infra
         unsigned long InicioAtras = 0;
@@ -224,10 +239,6 @@ void SumoBase::Camina(unsigned int TimeMinuts = 0){
         //MDerIzq(Motores,RGiro); //giramos
 
         while(1){
-            Serial.println("...");
-
-            //para controlar el temporizador de actividad
-            if(TimeMinuts > 0 && (millis() - inicio) >= (TimeMinuts*60000)) return;
 
             //comenzamos a contar
             Time = millis();
@@ -239,6 +250,11 @@ void SumoBase::Camina(unsigned int TimeMinuts = 0){
 
             //buscamos por un tiempo definido, esto para que no gire todo el rato en caso que no encuentre nada
             while((millis() - Time ) <= TGiro){
+
+                //para controlar el temporizador de actividad
+                if(TimeSeconds > 0 && (millis() - inicio) >= TimeSeconds) return;
+
+                //Movimiento completo del robot
                 UsarAllSUS();
                 Extras();
                 MoverPorSUS(InicioAtaque, usAccion, ataque, usDetected);

@@ -35,23 +35,18 @@ void AutoRemotoBase::BTHMove(unsigned int recSeg, char del = 'W', char atr = 'S'
 }
 
 //Aqui podemos usar ya sea modulos BlueThoot de arduino como HC05 o el de ESP32
-AutoRemotoBase::AutoRemotoBase(uint8_t velocidad, uint8_t HCreceivePin = 0, uint8_t HCtransmitPin = 0){
+AutoRemotoBase::AutoRemotoBase(uint8_t velocidad, uint8_t HCreceivePin = 0, uint8_t HCtransmitPin = 0, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE){
     Vel = velocidad;
+    motorType = typeMotor;
     #if defined(ESP32)
         BTHESP.begin(115200);
+        DBG_PRINTLN("BlueThoot de ESP32 Iniciado.");
     #else
-        if(HCreceivePin < 1 || HCtransmitPin <1) return;
+        if(HCreceivePin < 1 || HCtransmitPin < 1) return;
         BTH = new SoftwareSerial(HCreceivePin, HCtransmitPin);
         BTH->begin(9600);
+        DBG_PRINTLN("BlueThoot de Arduino Iniciado.");
     #endif
-}
-
-/*Para agregar 4 motores o mas, le decimos el orden ->IZQ->DER->IZQ->DER.
-Pero ahora, en este caso, los 2 motores primeros (que serian 2 llantas), seran los que se mueven
-hacia adelante*/
-void AutoRemotoBase::AddMotors(std::vector<Motor> Mtrs) {
-    Motores = Mtrs;
-    for(unsigned int i=0; i<Motores.size(); i++) SetMotor(Motores[i], Vel); 
 }
 
 /*Para agregar 4 motores o mas, le decimos el orden ->IZQ->DER->IZQ->DER.
@@ -66,10 +61,16 @@ void AutoRemotoBase::Add4Motors(Motor RotIzq1, Motor RotDer1, Motor izq2, Motor 
 
 void AutoRemotoBase::Camina(unsigned int recSeg = 2, char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E', unsigned int activeTimeMillis = 0){
     //Si no hay motores o no hay BlueThoot no hacemos nada
-    if(Motores.size() < 1) return;
+    if(Motores.size() < 1){
+        DBG_PRINTLN("Sin motores. Regresando.");
+        return;
+    }
     //si usa el modulo de arduino
     #if defined(__AVR__)
-        if(BTH == nullptr) return;
+        if(BTH == nullptr){
+            DBG_PRINTLN("Sin BlueThoot. Regresando.");
+            return;
+        }
     #endif
     
     //en caso de que no esten inicializados, no se como hacerlo asi que al rato veo
@@ -93,4 +94,6 @@ void AutoRemotoBase::Camina(unsigned int recSeg = 2, char del = 'W', char atr = 
         #endif
     //si no configura el tiempo se mantendra siempre, si si el bucle terminara cuando el tiempo se acabe
     }while( ( activeTimeMillis == 0 || (initTime > 0 && (millis() - initTime < activeTimeMillis))) );
+
+    DBG_PRINTLN("Tiempo Agotado. Movimiento terminado.");
 }

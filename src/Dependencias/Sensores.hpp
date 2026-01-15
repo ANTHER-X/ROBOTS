@@ -5,6 +5,12 @@
 //para iniciar la RandomSeed
 #define RSeed randomSeed(analogRead(0));
 
+//tipo de motor
+enum MotorDriverType {
+  DRIVER_PWM_SEPARATE = 0,
+  DRIVER_PWM_INTEGRATED = 1
+};
+
 //para los motores que usara
 struct Motor{
 	uint8_t  L1;

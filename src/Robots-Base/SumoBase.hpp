@@ -25,7 +25,7 @@ class SumoBase : public Robot{
         //unidades de medicion basicos
         uint8_t DistAtaq;
         unsigned int Distcm, TRec, TGiro;
-		uint8_t Vel, VelGiro;
+		uint8_t VelGiro;
         bool RGiro; //este es para que gire aleatoriamente
 
         //metodos privados
@@ -59,7 +59,7 @@ class SumoBase : public Robot{
 		virtual UltraSonico *TomaUltrasonicoByID(int ID);
 
     public:
-        SumoBase(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec, unsigned int TGiroMiliSec);
+        SumoBase(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec, unsigned int TGiroMiliSec, MotorDriverType typeMotor);
 
 		virtual void AddInfraAdelante(uint8_t pin);
 
