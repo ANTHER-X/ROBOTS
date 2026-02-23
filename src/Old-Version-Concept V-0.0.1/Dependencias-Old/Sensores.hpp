@@ -1,3 +1,11 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
+
 /*Sensores*/
 
 #pragma once

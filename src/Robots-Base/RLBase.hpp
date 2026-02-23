@@ -1,3 +1,10 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 //Incluimos el Robot base, esto para poder mover nuestros motores
 #include "Robot.hpp"
 #include "../Dependencias/Utilidades.hpp"
@@ -7,6 +14,11 @@
 class RLBase : public Robot{
 
     protected:
+
+    using Robot::Robot; //Para usar el constructor del Robot base
+    using Robot::MDelAtrs;
+    using Robot::MDerIzq;
+    using Robot::SetMotor;
     
     //Datos principales para guardar los datos del movimiento
     unsigned int DistDerecha, DistIzquierda, DistDelante, auxMayorDist, TGiro, TRec;

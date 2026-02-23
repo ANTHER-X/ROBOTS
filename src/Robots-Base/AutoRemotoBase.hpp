@@ -1,3 +1,10 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 #include "Robot.hpp"
 
 #if defined(__AVR__)
@@ -37,11 +44,6 @@ class AutoRemotoBase : public Robot{
             #endif
         }*/
     
-		/*Para agregar 4 motores o mas, le decimos el orden ->IZQ->DER->IZQ->DER.
-        Pero ahora, en este caso, los 2 motores primeros (que serian 2 llantas), seran los que se mueven
-        hacia adelante*/
-		virtual void AddMotors(std::vector<Motor> Mtrs);
-
 		/*Para agregar 4 motores o mas, le decimos el orden ->IZQ->DER->IZQ->DER.
         Pero ahora, en este caso, los 2 motores primeros (que serian 2 llantas), seran los que se mueven
         hacia adelante*/

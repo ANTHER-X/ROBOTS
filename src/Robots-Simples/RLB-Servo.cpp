@@ -1,3 +1,10 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 #include "RLB-Servo.hpp"
 
 void RLBServo::TomaDistanciaMayor(){

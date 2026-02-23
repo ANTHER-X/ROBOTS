@@ -1,3 +1,10 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 //Incluimos el Sumo base y creamos a partir de este
 #include "../Robots-Base/SumoBase.hpp"
 
@@ -15,21 +22,6 @@ Aqui la estructura de sensores es asi:
 3; Derecha
 */
 
-/*
-//Esta estructura me dara un control para hacer que la funcion de busqueda este separada del resto, no usada.
-struct SensoresBusquedaSimpleSumo{
-	Infrarrojo *infDelante;
-	Infrarrojo *infAtras;
-	Infrarrojo *infIzquierda;
-	Infrarrojo *infDerecha;
-
-	UltraSonico *susDelante;
-	UltraSonico *susAtras;
-	UltraSonico *susIzqueirda;
-	UltraSonico *susDerecha;
-};
-*/
-
 class SumoSimple : public SumoBase{
 
     protected:
@@ -37,19 +29,13 @@ class SumoSimple : public SumoBase{
 		virtual void SimpleAccion(bool &accion, unsigned long &Time);
 
 		//Nothing :/
-		virtual void Extras() override{}
+		inline virtual void Extras() override{}
 		
 		virtual void MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &atUsed, bool &usUsed) override;
 
 		virtual void MoverPorInfrarrojos(unsigned long &timer, bool &used) override;
 
-		//Nothing :/
-		virtual void FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAccion, unsigned long timeAtaque) override{
-			
-		}
-		virtual void Ataque(bool &ataque, bool &infUsed, unsigned long &timeAtaque, unsigned long &timeInf) override{
-			
-		}/*
+		/*
 		virtual  override{
 			
 		}*/

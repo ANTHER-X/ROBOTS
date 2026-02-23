@@ -1,6 +1,12 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 
 #include <Arduino.h>
-#include <algorithm>
 #include "Robot.hpp"
 
 
@@ -16,10 +22,12 @@ class SumoBase : public Robot{
     protected:
         
         //Sensores basico
-        std::vector<UltraSonico> UltraSonicos;
+        UltraSonico UltraSonicos[MAXSUS];
+		uint8_t UltraSonicoCount = 0;
         
 		#if USE_IR == 1
-			std::vector<Infrarrojo> Infrarrojos;
+			Infrarrojo Infrarrojos[MAXIR];
+			uint8_t InfrarrojoCount = 0;
 		#endif
 
         //unidades de medicion basicos
@@ -55,8 +63,8 @@ class SumoBase : public Robot{
 		//Los Ultrasonicos para los ojos
 		void AddSUS(uint8_t id, uint8_t triger, uint8_t echo);
 		
-		virtual Infrarrojo *TomaInfrarrojoByID(int ID);
-		virtual UltraSonico *TomaUltrasonicoByID(int ID);
+		virtual bool ExistIR(int ID);
+		virtual bool ExistSUS(int ID);
 
     public:
         SumoBase(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec, unsigned int TGiroMiliSec, MotorDriverType typeMotor);

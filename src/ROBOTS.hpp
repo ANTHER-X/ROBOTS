@@ -1,3 +1,10 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 
 #pragma once
 
@@ -6,7 +13,7 @@
 //Archivo de Confguracion
 #include "Config.hpp"
 
-#ifndef USE_OLD_V
+#if (USE_OLD_V == 0)
     //Dependencias
     #include "Dependencias/Sensores.hpp"
     #include "Dependencias/Utilidades.hpp"
@@ -26,6 +33,9 @@
     //Autos Remoto (por BlueThoot)
     #include "Robots-Base/AutoRemotoBase.hpp"
     #include "Robots-Simples/AutRem-SSS.hpp"
+
+    //Seguidores de Linea
+    #include "Robots-Simples/SeguidorLinea.hpp"
 #else
     /*Incluimos los antiguos modelos para re-tocarlos*/
     #include "Old-Version-Concept V-0.0.1/Dependencias-Old/Sensores.hpp"

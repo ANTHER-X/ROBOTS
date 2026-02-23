@@ -1,11 +1,18 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 #include "RLBase.hpp"
 
 //RLBase::
 
 void RLBase::MoveDerIzq(bool derIzq){
-    MDerIzq(Motores, derIzq);
+    MDerIzq(*Motores, CantidadMotores, derIzq);
     delay(TGiro);
-    MDelAtrs(Motores, true);
+    MDelAtrs(*Motores, CantidadMotores, true);
 }
 
 /*Metodos privados que nos ayudan a configurar el movimiento.
@@ -41,16 +48,23 @@ RLBase::RLBase(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeG
 
 //Metemos motores, asi ira la configuracion, primero izq, luego derecha
 void RLBase::Add4Motors(Motor izq1, Motor der1, Motor izq2, Motor der2){
-    SetMotor(izq1,VRecta); Motores.push_back(izq1);
-    SetMotor(der1,VRecta); Motores.push_back(der1);
-    SetMotor(izq2,VRecta); Motores.push_back(izq2);
-    SetMotor(der2,VRecta); Motores.push_back(der2);
+
+    if(CantidadMotores + 4 > MAXMOTORS){
+        DBG_PRINTLN("No se pueden agregar mas motores, se supero el limite establecido.");
+        return;
+    }
+
+    //Agregamos los motores
+    SetMotor(&izq1,VRecta); Motores[CantidadMotores++] = &izq1;
+    SetMotor(&der1,VRecta); Motores[CantidadMotores++] = &der1;
+    SetMotor(&izq2,VRecta); Motores[CantidadMotores++] = &izq2;
+    SetMotor(&der2,VRecta); Motores[CantidadMotores++] = &der2;
 }
 
 //Usamos este metodo para movernos, Pienso yo que asi se debe mover asi que de aqui es lo mismo para los RLB
 void RLBase::Camina(){
     //Si no hay motores, no hacemos nada
-    if(Motores.size() <= 0){
+    if(CantidadMotores < 0){
         DBG_PRINTLN("Sin motores. Regresando.");
         return;
     }
@@ -71,7 +85,7 @@ void RLBase::Camina(){
             DBG_PRINTLN("\n\nMoviendo.\n\n");
 
             //Centro
-            if(Movimiento == 1) MDelAtrs(Motores, true);
+            if(Movimiento == 1) MDelAtrs(*Motores, CantidadMotores, true);
             //Izquierda
             else if(Movimiento == 0) MoveDerIzq(true);
             //Derecha si no hay mas
@@ -87,7 +101,7 @@ void RLBase::Camina(){
             DBG_PRINTLN("\n\nMoviento terminado.\n\n");
 
             OnMovement = false;
-            MStop(Motores);
+            MStop(*Motores, CantidadMotores);
             Movimiento = RetornaDistanciaMayor();
         }
     }

@@ -1,22 +1,29 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 #include "AutoRemotoBase.hpp"
 
 //AutoRemotoBase::
 
 void AutoRemotoBase::TeclaMoveMotors(char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E'){
     //dependiendo de la lectura, nos movemos o no
-    if     (tecla == del) MDelAtrs(Motores, true);
-    else if(tecla == atr) MDelAtrs(Motores, false);
-    else if(tecla == der) MDerIzq(Motores, true);
-    else if(tecla == izq) MDerIzq(Motores, false);
+    if     (tecla == del) MDelAtrs(*Motores, CantidadMotores, true);
+    else if(tecla == atr) MDelAtrs(*Motores, CantidadMotores, false);
+    else if(tecla == der) MDerIzq(*Motores, CantidadMotores, true);
+    else if(tecla == izq) MDerIzq(*Motores, CantidadMotores, false);
     else if(tecla == spedMas){
         Vel += 10;
-        ConfigVelocidad(Motores, Vel);
+        ConfigVelocidad(*Motores, CantidadMotores, Vel);
     }
     else if(tecla == spedMenos){
         Vel -= 10;
-        ConfigVelocidad(Motores, Vel);
+        ConfigVelocidad(*Motores, CantidadMotores, Vel);
     }
-    else if(tecla == det) MStop(Motores);
+    else if(tecla == det) MStop(*Motores, CantidadMotores);
 }
 
 //Si usamos arduino y algun modulo BlueThoot
@@ -31,7 +38,7 @@ void AutoRemotoBase::BTHMove(unsigned int recSeg, char del = 'W', char atr = 'S'
     delayMicroseconds(recSeg);
 
     //nos detenemos
-    MStop(Motores);
+    Robot::MStop(*Motores, CantidadMotores);
 }
 
 //Aqui podemos usar ya sea modulos BlueThoot de arduino como HC05 o el de ESP32
@@ -53,15 +60,23 @@ AutoRemotoBase::AutoRemotoBase(uint8_t velocidad, uint8_t HCreceivePin = 0, uint
 Pero ahora, en este caso, los 2 motores primeros (que serian 2 llantas), seran los que se mueven
 hacia adelante*/
 void AutoRemotoBase::Add4Motors(Motor RotIzq1, Motor RotDer1, Motor izq2, Motor der2){
-    SetMotor(RotIzq1,Vel); Motores.push_back(RotIzq1);
-    SetMotor(RotDer1,Vel); Motores.push_back(RotDer1);
-    SetMotor(izq2,Vel); Motores.push_back(izq2);
-    SetMotor(der2,Vel); Motores.push_back(der2);
+
+    //Verificamos que no se supere el limite de motores
+    if(CantidadMotores + 4 > MAXMOTORS){
+        DBG_PRINTLN("No se pueden agregar mas motores, se supero el limite establecido.");
+        return;
+    }
+
+    //Agregamos los motores
+    SetMotor(&RotIzq1,Vel); Motores[CantidadMotores++] = &RotIzq1;
+    SetMotor(&RotDer1,Vel); Motores[CantidadMotores++] = &RotDer1;
+    SetMotor(&izq2,Vel); Motores[CantidadMotores++] = &izq2;
+    SetMotor(&der2,Vel); Motores[CantidadMotores++] = &der2;
 }
 
 void AutoRemotoBase::Camina(unsigned int recSeg = 2, char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E', unsigned int activeTimeMillis = 0){
     //Si no hay motores o no hay BlueThoot no hacemos nada
-    if(Motores.size() < 1){
+    if(CantidadMotores == 0){
         DBG_PRINTLN("Sin motores. Regresando.");
         return;
     }

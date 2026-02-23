@@ -1,3 +1,10 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 //Incluimos el Robot base, esto para poder mover nuestros motores
 #include "../Robots-Base/RLBase.hpp"
 #include <Servo.h>

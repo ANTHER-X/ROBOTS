@@ -1,5 +1,13 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 /*Base Class*/
 #pragma once
+#include <Arduino.h>
 #include "Dependencias-Old/Sensores.hpp"
 
 class Robot{

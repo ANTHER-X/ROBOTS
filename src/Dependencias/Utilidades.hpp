@@ -1,10 +1,19 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 #include "Sensores.hpp"
 #include "../Config.hpp"
 
 #pragma once
 
+#include <string.h>
+
 //Tomamos esta funcion, la usaremos para leer y capturar la distancia de los sensores Ultrasonicos
-unsigned int ActivateUS(UltraSonico US){
+inline unsigned int ActivateUS(UltraSonico US){
 	digitalWrite(US.Pin[0], HIGH); //mando una senial de sonido
   delayMicroseconds(10);
   digitalWrite(US.Pin[0], LOW); //detengo la senial

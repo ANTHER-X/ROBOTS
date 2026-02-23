@@ -1,3 +1,10 @@
+/*
+ * Proyect: ROBOTS
+ * Author: ANTHER
+ * Licence: MIT
+ * GitHub: https://github.com/ANTHER-X/ROBOTS
+*/
+
 /*Sensores*/
 
 #pragma once
@@ -6,9 +13,15 @@
 #define RSeed randomSeed(analogRead(0));
 
 //tipo de motor
-enum MotorDriverType {
+enum MotorDriverType : uint8_t {
   DRIVER_PWM_SEPARATE = 0,
   DRIVER_PWM_INTEGRATED = 1
+};
+
+//Tipo de Buzzer digital
+enum BuzzerType : uint8_t {
+	BUZZER_ACTIVE = 0,
+	BUZZER_PASSIVE = 1
 };
 
 //para los motores que usara
@@ -30,4 +43,18 @@ struct Infrarrojo{
 	uint8_t  Pin; //pin
 	bool Estado; //para ver si capturo algun valor (0->sin luz, 1->Con luz)
 	uint8_t ID;
+};
+
+/*
+ * Para el seguidor de linea pondremos mas estados para validar correctamente
+ * cada sensor
+*/
+struct IRSeguidorLinea{
+	Infrarrojo IR;
+	int8_t pesoPotencia; 
+};
+
+struct SoundBuzzer {
+    uint16_t frecuencia; // Frecuencia en Hz (0 para silencio)
+    uint16_t duracion;   // Tiempo en ms
 };
