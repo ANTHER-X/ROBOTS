@@ -37,7 +37,7 @@ class AutoRemotoBase : public Robot{
         virtual void BTHMove(unsigned int recSeg, char del, char atr, char der, char izq, char det, char spedMas, char spedMenos);
 
     public:
-        AutoRemotoBase(uint8_t velocidad, uint8_t receivePin, uint8_t transmitPin, MotorDriverType typeMotor);
+        AutoRemotoBase(uint8_t velocidad, uint8_t receivePin = 0, uint8_t transmitPin = 0, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE);
         /*~AutoRemotoBase(){
             #if defined(__AVR__)
                 if(BTH != nullptr) delete BTH;
@@ -49,5 +49,5 @@ class AutoRemotoBase : public Robot{
         hacia adelante*/
 		virtual void Add4Motors(Motor RotIzq1, Motor RotDer1, Motor izq2, Motor der2);
 
-        virtual void Camina(unsigned int recSeg, char del, char atr, char der, char izq, char det, char spedMas, char spedMenos, unsigned int activeTimeMillis);
+        virtual void Camina(unsigned int recSeg = 1, char del = 'w', char atr = 's', char der = 'd', char izq = 'a', char det = 'x', char spedMas = 'q', char spedMenos = 'e', unsigned int activeTimeMillis = 0);
 };

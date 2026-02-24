@@ -35,7 +35,7 @@ uint8_t RLBase::RetornaDistanciaMayor(){
     else return 2;
 }
 
-RLBase::RLBase(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE){
+RLBase::RLBase(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec, MotorDriverType typeMotor){
     TRec = timeRec;
     TGiro = timeGiro;
     VRecta = velocidadRecta;
@@ -62,7 +62,7 @@ void RLBase::Add4Motors(Motor izq1, Motor der1, Motor izq2, Motor der2){
 }
 
 //Usamos este metodo para movernos, Pienso yo que asi se debe mover asi que de aqui es lo mismo para los RLB
-void RLBase::Camina(){
+void RLBase::Camina(unsigned int activeTimeMillis){
     //Si no hay motores, no hacemos nada
     if(CantidadMotores < 0){
         DBG_PRINTLN("Sin motores. Regresando.");
@@ -76,8 +76,9 @@ void RLBase::Camina(){
     //Nos movemos de forma ideterminada en esta funcion.
     bool OnMovement = false;
     unsigned long Time;
+    unsigned int initTime = activeTimeMillis ? millis(): 0;
 
-    while(1){
+    do{
         
         //Si no estamos moviendonos, lo hacemos
         if(!OnMovement){    
@@ -104,5 +105,5 @@ void RLBase::Camina(){
             MStop(*Motores, CantidadMotores);
             Movimiento = RetornaDistanciaMayor();
         }
-    }
+    }while( ( activeTimeMillis == 0 || (initTime > 0 && (millis() - initTime < activeTimeMillis))) );
 }

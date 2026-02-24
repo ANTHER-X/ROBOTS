@@ -42,7 +42,7 @@ void AutoRemotoBase::BTHMove(unsigned int recSeg, char del = 'W', char atr = 'S'
 }
 
 //Aqui podemos usar ya sea modulos BlueThoot de arduino como HC05 o el de ESP32
-AutoRemotoBase::AutoRemotoBase(uint8_t velocidad, uint8_t HCreceivePin = 0, uint8_t HCtransmitPin = 0, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE){
+AutoRemotoBase::AutoRemotoBase(uint8_t velocidad, uint8_t HCreceivePin, uint8_t HCtransmitPin, MotorDriverType typeMotor){
     Vel = velocidad;
     motorType = typeMotor;
     #if defined(ESP32)
@@ -74,7 +74,7 @@ void AutoRemotoBase::Add4Motors(Motor RotIzq1, Motor RotDer1, Motor izq2, Motor 
     SetMotor(&der2,Vel); Motores[CantidadMotores++] = &der2;
 }
 
-void AutoRemotoBase::Camina(unsigned int recSeg = 2, char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E', unsigned int activeTimeMillis = 0){
+void AutoRemotoBase::Camina(unsigned int recSeg, char del, char atr, char der, char izq, char det, char spedMas, char spedMenos, unsigned int activeTimeMillis){
     //Si no hay motores o no hay BlueThoot no hacemos nada
     if(CantidadMotores == 0){
         DBG_PRINTLN("Sin motores. Regresando.");

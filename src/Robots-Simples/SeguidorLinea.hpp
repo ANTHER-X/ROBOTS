@@ -21,14 +21,22 @@ protected:
     short centro, pIzq = 0, pDer = 0;
 
     //Cosas para coliciones
-    bool notasInFlash = false;
+    //IR para detectar coliciones
+    Infrarrojo IRColicioner = {0};
+
+    //Buzzer y datos para reproducir sonido en caso de coliciones
+    BuzzerType buzzerType;
+    //Pin para el buzzer
+    uint8_t pinBuzzerSound = 0;
+    //Cadena de notas y su cantidad
     SoundBuzzer* notas[MAXNOTAS];
     uint8_t NotasCount = 0;
+    //indice actual de reproduccion
     uint8_t actualIndexSoundPlayer = 0;
+    //Tiempo de inicio de la reproduccion actual
     unsigned long initSoundTime = 0;
-    BuzzerType buzzerType;
-    Infrarrojo IRColicioner = {0};
-    uint8_t pinBuzzerSound = 0;
+    //Para saber donde se guardan las notas
+    bool notasInFlash = false;
 
     void AccionaAllIR();
     void MoveMotorsForIR();

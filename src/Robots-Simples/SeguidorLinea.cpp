@@ -146,11 +146,6 @@ void SeguidorLinea::AddIRs(uint8_t IRpines[], uint8_t tamIR){
 
    /*  //Agregamos los IR y el pero-potencia de cada uno
     for(short i=centro-tamIR; i < centro; i++){
-        En el caso de los impares, la potencia automaticamente esta ajustada ya que el centro es impar
-        y solo este tendra valor 0.
-        En caso de los pares, habra 2 IR con cero, por lo que a todos los IR detras
-        del que ya tenga 0 se les sumara 1
-        
         IRSeguidorLinea ir = {{(isPar ? (IRpines[i+centro]) : (IRpines[i+centro-1])), false, 0}, 
                               (int8_t)(isPar ? ((i <= centro-(centro+1)) ? i+1 : i) : i)};
         irs[tamIrs] = &ir;
@@ -172,7 +167,7 @@ void SeguidorLinea::InitStatsIRs(){
         y solo este tendra valor 0.
         En caso de los pares, habra 2 IR con cero, por lo que a todos los IR detras
         del que ya tenga 0 se les sumara 1*/
-        irs[i]->pesoPotencia = (isPar ? ((i <= centro-(centro+1)) ? i+1 : i) : i);
+        irs[i+ (isPar? (centro):(centro-1)) ]->pesoPotencia = (isPar ? ((i <= centro-(centro+1)) ? i+1 : i) : i);
     }
 
     /*Ahora iniciamos cada pin IR*/
@@ -216,7 +211,9 @@ void SeguidorLinea::PotenciaEquilibrio(){
 void SeguidorLinea::ConfigVelocidad(Motor* M, uint8_t size,uint8_t vDer, uint8_t vIzq){
     //seteamos velocidad
 	for(uint8_t i=0; i<size; i++){
-        //Par -> izquierda
+        /*Vemos el tipo de motor y agregamos al pin correspondiente,
+        para agregar velocidad vemos cuales son los motores de la
+        izquierda -> Pares, y cuales los de la derecha -> Impares*/
         analogWrite((motorType == DRIVER_PWM_SEPARATE) ? (M[i].PWM) : (M[i].L1), ((i & 1) == 0) ? (vIzq):(vDer));
         //debugin
         DBG_PRINT("Velocidad de motores izquierdos:  ");
@@ -271,7 +268,7 @@ void SeguidorLinea::Camina(unsigned int activeTimeMillis){
     //Si tiene pin de buzzer pero no agrego notas, damos unas notas por defecto
     if(pinBuzzerSound != 0 && NotasCount == 0){
         SoundBuzzer notaDefault[2] PROGMEM = {{420,200}, {130,200}};
-        AddNotas(notaDefault, 2);
+        AddNotas(notaDefault, 2, true);
     }
 
     unsigned int initTime = activeTimeMillis ? millis(): 0;

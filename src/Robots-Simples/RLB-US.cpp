@@ -16,7 +16,7 @@ void RLBUS::TomaDistanciaMayor(){
 
 
 RLBUS::RLBUS(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec,
-    UltraSonico _USDelante, UltraSonico _USDerecha, UltraSonico _USIzquierda, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE)
+    UltraSonico _USDelante, UltraSonico _USDerecha, UltraSonico _USIzquierda, MotorDriverType typeMotor)
     : RLBase(velocidadRecta, velocidadGiro, timeGiro, timeRec, typeMotor){
     //Tomamos
     USDelante = _USDelante;

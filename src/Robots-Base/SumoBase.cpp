@@ -229,7 +229,7 @@ void SumoBase::Add2Motors(Motor L1, Motor L2){
     SetMotor(&L2,Vel); Motores[CantidadMotores++] = &L2;
 }
 
-void SumoBase::Camina(unsigned int activeTimeMillis = 0){
+void SumoBase::Camina(unsigned int activeTimeMillis){
     if(CantidadMotores != 0){
 
         //Movimiento aleatorio

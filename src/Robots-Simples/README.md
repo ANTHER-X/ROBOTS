@@ -51,7 +51,7 @@ el IR y el SUS no estan ya que ya estan explicados en el sumo base y este solo l
 | Metodo | Descripcion
 |--------|-----------
 | SeguidorLinea | pide la **velocidadMedia**, asi como opcionalmente la **velocidadMaxima** y el  **motorDriverType** que es el tipo de controlador de motores
-| AddIRs | Este metodo pide un ARRAY de pines de los sensores IR, asi como the size exacto de este array. La lista es para detectar y la forma es una linea recta que comienza de izquierda con index 0 hacia la derecha.
+| AddIRs | Este metodo pide un array de pines de los sensores IR, asi como the size exacto de este array. La lista es para detectar y la forma es una linea recta que comienza de izquierda con index 0 hacia la derecha.
 | AddIRColicion | De forma opcional agregas el pin del sensor para detectar una colicion, el detectro es digital y se piensa usar con sensores IR
 | AddBuzzerPin | De forma opcional agregas el pin de tu buzzer digital, puede ser ya sea pasivo o activo
 | AddNotas | De forma opcional agregas un array de tipo **SoundBuzzer** para poder meter la melodia que quieras que suene al momento de colicionar, si necesitas mas notas modifica **MAXNOTAS** en configuracion

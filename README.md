@@ -29,8 +29,8 @@ hay varias formas de incluir la libreria en tu entorno de arduino, vamos a ver 2
 - **Forma 1:**
 
 1. Copiar la carpeta de la librería dentro de:
-Si es **Windows:** `Documents/Arduino/libraries`\
-Si es **MacOS:** `~/Documents/Arduino/libraries/`\
+Si es **Windows:** `Documents/Arduino/libraries`  
+Si es **MacOS:** `~/Documents/Arduino/libraries/`  
 Si es **Linux:** `~/Arduino/libraries/`
 
 2. Abre o reinicia Arduino IDE
@@ -72,7 +72,7 @@ Si por alguna razon no te deja compilar, lo mas sencillo es dejar la carpeta en 
 
 ## Estructura del proyecto
 
-La estructura de esta libreria esta por clases, las clases heredan de una clase base **Robot**, esta clase lo que hace es controlar solo los motores, da velocidad, movimiento, agregacion de motores. De momento los motores estan en listas (vector), asi que usa STL, quiza lo cambie despues.
+La estructura de esta libreria esta por clases, las clases heredan de una clase base **Robot**, esta clase lo que hace es controlar solo los motores, da velocidad, movimiento, agregacion de motores.
 
 Cada clase hija esta en la carpeta **Robots-Base**, cada clase hace una cosa de forma basica y tiene la logica de como funciona el robot dependiendo del tipo.
 

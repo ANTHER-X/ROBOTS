@@ -15,7 +15,7 @@ void RLBServo::TomaDistanciaMayor(){
     servo.write(90);  delay(200);
 }
 
-RLBServo::RLBServo(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec, UltraSonico us, uint8_t pinServo, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE)
+RLBServo::RLBServo(uint8_t velocidadRecta, uint8_t velocidadGiro, unsigned int timeGiro, unsigned int timeRec, UltraSonico us, uint8_t pinServo, MotorDriverType typeMotor)
 : RLBase(velocidadRecta, velocidadGiro, timeGiro, timeRec, typeMotor){
     US = us;
     servo.attach(pinServo);

@@ -75,5 +75,5 @@ class SumoBase : public Robot{
 
 		virtual void Add2Motors(Motor L1, Motor L2);
 
-        virtual void Camina(unsigned int TimeMinuts) override;
+        virtual void Camina(unsigned int TimeMinuts = 0) override;
 };
