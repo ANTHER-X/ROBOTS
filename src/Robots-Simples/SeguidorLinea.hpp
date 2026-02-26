@@ -14,7 +14,7 @@
 class SeguidorLinea : public Robot{
 protected:
 
-    IRSeguidorLinea* irs[MAXIRSEGUIDOR];
+    IRSeguidorLinea irs[MAXIRSEGUIDOR];
     uint8_t tamIrs = 0, vMax;
     unsigned long timeMove;
     bool isPar;

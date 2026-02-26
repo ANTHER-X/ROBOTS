@@ -27,15 +27,13 @@ void AutoRemotoBase::TeclaMoveMotors(char del = 'W', char atr = 'S', char der ='
 }
 
 //Si usamos arduino y algun modulo BlueThoot
-void AutoRemotoBase::BTHMove(unsigned int recSeg, char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E'){
-    //Tomamos el recorido real a segundos
-    recSeg *= 1000000;
+void AutoRemotoBase::BTHMove(unsigned int recMillis, char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E'){
 
     //Movemos los motores
     TeclaMoveMotors(del,atr,der,izq,det,spedMas,spedMenos);
     
     //nos mantenemos en movimiento por NSeg
-    delayMicroseconds(recSeg);
+    delayMicroseconds(recMillis);
 
     //nos detenemos
     Robot::MStop(*Motores, CantidadMotores);
@@ -50,8 +48,8 @@ AutoRemotoBase::AutoRemotoBase(uint8_t velocidad, uint8_t HCreceivePin, uint8_t 
         DBG_PRINTLN("BlueThoot de ESP32 Iniciado.");
     #else
         if(HCreceivePin < 1 || HCtransmitPin < 1) return;
-        BTH = new SoftwareSerial(HCreceivePin, HCtransmitPin);
-        BTH->begin(9600);
+        BTH = {HCreceivePin, HCtransmitPin};
+        BTH.begin(9600);
         DBG_PRINTLN("BlueThoot de Arduino Iniciado.");
     #endif
 }
@@ -74,21 +72,12 @@ void AutoRemotoBase::Add4Motors(Motor RotIzq1, Motor RotDer1, Motor izq2, Motor 
     SetMotor(&der2,Vel); Motores[CantidadMotores++] = &der2;
 }
 
-void AutoRemotoBase::Camina(unsigned int recSeg, char del, char atr, char der, char izq, char det, char spedMas, char spedMenos, unsigned int activeTimeMillis){
+void AutoRemotoBase::Camina(unsigned int recMillis, char del, char atr, char der, char izq, char det, char spedMas, char spedMenos, unsigned int activeTimeMillis){
     //Si no hay motores o no hay BlueThoot no hacemos nada
     if(CantidadMotores == 0){
         DBG_PRINTLN("Sin motores. Regresando.");
         return;
     }
-    //si usa el modulo de arduino
-    #if defined(__AVR__)
-        if(BTH == nullptr){
-            DBG_PRINTLN("Sin BlueThoot. Regresando.");
-            return;
-        }
-    #endif
-    
-    //en caso de que no esten inicializados, no se como hacerlo asi que al rato veo
     
     //Si es que hay motores, configuramos las variables iniciales
     unsigned int initTime = activeTimeMillis ? millis(): 0;//tiempo de inicio si es que agrega (default '0')
@@ -99,12 +88,12 @@ void AutoRemotoBase::Camina(unsigned int recSeg, char del, char atr, char der, c
         #if defined(ESP32) //ESP
             if(BTHESP.available()){
                 tecla = BTHESP.read();
-                BTHMove(recSeg,del,atr,der,izq,det,spedMas,spedMenos);
+                BTHMove(recMillis,del,atr,der,izq,det,spedMas,spedMenos);
             }
         #else   //Arduino
-            if(BTH->available()){
-                tecla = BTH->read();
-                BTHMove(recSeg,del,atr,der,izq,det,spedMas,spedMenos);
+            if(BTH.available()){
+                tecla = BTH.read();
+                BTHMove(recMillis,del,atr,der,izq,det,spedMas,spedMenos);
             }
         #endif
     //si no configura el tiempo se mantendra siempre, si si el bucle terminara cuando el tiempo se acabe

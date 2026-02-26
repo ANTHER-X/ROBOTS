@@ -22,6 +22,7 @@ Esta clase maneja los motores, no hace nada mas que eso, es basico si, pero es l
 |--------|-----------
 | Add4Motors | pide y agrega 4 motores a la lista de motores
 | AutoRemotoBase | Pide una **velocidad** para los motores, pide el pin **receivePin** del modulo bluethoot para tomar datos, si el mocrocontrolador es un ESP32 NO usaras este pin, Pide el **transmitPin** del modulo bluethoot, al igual NO lo usaras si USAS ESP32, Pide **typeMotor**, esta es para poder saber que tipo de controlador de motor tienes, se explica mas en el README de depencencias. Ademas si necesitas usarlo y usas el ESP32 se ignoraran los datos del Recive y Transmite pin.
+| Camina | El robot pide opcionalmente varios char los cuales son las "teclas" con las que puede moverse hacia los lados, detenetse, aumentar o disminuir su velocidad.
 
 
 ## RLBase (Resuelve Laberinto base)

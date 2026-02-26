@@ -135,25 +135,23 @@ void SeguidorLinea::AddIRs(uint8_t IRpines[], uint8_t tamIR){
     }
 
     //Agregamos los IR sin nada nadita
-    for(uint8_t i=tamIrs; i< tamIR+tamIrs; i++){
-        IRSeguidorLinea ir = {{IRpines[i], false, 0}, 0};
-        irs[tamIrs] = &ir;
+    uint8_t aux = tamIrs;
+    DBG_VALUE_LN("Tam actual: ", tamIrs);
+    for(uint8_t i=tamIrs; i< (tamIR+aux); i++){
+
+        irs[tamIrs] = {{IRpines[i-aux], false, 0}, 0};
         tamIrs++;
+
+        DBG_VALUE_LN("Agredando IR's. Index", (tamIrs-1));
+        DBG_VALUE_LN("Agregando IR's. Pin: ", irs[tamIrs-1].IR.Pin);
     }
 
     //Reinicializamos las estadisticas de los IRs
     InitStatsIRs();
-
-   /*  //Agregamos los IR y el pero-potencia de cada uno
-    for(short i=centro-tamIR; i < centro; i++){
-        IRSeguidorLinea ir = {{(isPar ? (IRpines[i+centro]) : (IRpines[i+centro-1])), false, 0}, 
-                              (int8_t)(isPar ? ((i <= centro-(centro+1)) ? i+1 : i) : i)};
-        irs[tamIrs] = &ir;
-        tamIrs++;
-    } */
 }
 
 void SeguidorLinea::InitStatsIRs(){
+    DBG_VALUE_LN("Inicializando IR's. Tam. de IRs: ", tamIrs);
     //Vemos si es o no par
     isPar = (tamIrs%2 == 0);
     //El centro de la linea
@@ -167,13 +165,15 @@ void SeguidorLinea::InitStatsIRs(){
         y solo este tendra valor 0.
         En caso de los pares, habra 2 IR con cero, por lo que a todos los IR detras
         del que ya tenga 0 se les sumara 1*/
-        irs[i+ (isPar? (centro):(centro-1)) ]->pesoPotencia = (isPar ? ((i <= centro-(centro+1)) ? i+1 : i) : i);
+        irs[i+ (isPar? (centro):(centro-1))].pesoPotencia = (isPar ? ((i <= centro-(centro+1)) ? i+1 : i) : i);
+        DBG_VALUE_LN("Registrando indices de acceso para IR, index: ", (i+ (isPar? (centro):(centro-1))));
+        DBG_VALUE_LN("Valor potencia: ", irs[i+ (isPar? (centro):(centro-1))].pesoPotencia);
     }
 
     /*Ahora iniciamos cada pin IR*/
-    for(uint8_t i=0; i <= tamIrs; i++){
-        DBG_VALUE_LN("IR Agregado, pin: ", irs[i]->IR.Pin);
-        pinMode(irs[i]->IR.Pin, INPUT);
+    for(uint8_t i=0; i < tamIrs; i++){
+        DBG_VALUE_LN("IR Inicializado, pin: ", irs[i].IR.Pin);
+        pinMode(irs[i].IR.Pin, INPUT);
     }
 
 }
@@ -181,16 +181,17 @@ void SeguidorLinea::InitStatsIRs(){
 
 // Actualizamos el estado a lectura de los IRs
 void SeguidorLinea::AccionaAllIR(){
-    for(uint8_t i=0; i<=tamIrs; i++){
-        irs[i]->IR.Estado = digitalRead(irs[i]->IR.Pin);
+    for(uint8_t i=0; i<tamIrs; i++){
+        irs[i].IR.Estado = digitalRead(irs[i].IR.Pin);
         
         //debugin
-        DBG_PRINT_Var(irs[i]->IR.Pin);
-        DBG_VALUE(": Estado", irs[i]->IR.Estado);
+        DBG_VALUE_LN("Pin: ",irs[i].IR.Pin);
+        DBG_VALUE_LN(": Estado: ", irs[i].IR.Estado);
     }
 }
 
 void SeguidorLinea::PotenciaEquilibrio(){
+    DBG_PRINTLN("Tomando potencias");
     //Vemos cual lado tiene mayor lectura igual respecto al centro
     pIzq = 0;
     pDer = 0;
@@ -200,13 +201,27 @@ void SeguidorLinea::PotenciaEquilibrio(){
     * eh incremental hacia un lado, si es par, el centro derecho sera el centro-2 por la pocicion inicial que fue desde 1 y
     * no desde 0, en caso de impar el verdadero centro es centro-1
     */
-    for(uint8_t i = centro-2; i>=0; i--)
-        pIzq += (irs[i]->IR.Estado == irs[i+1]->IR.Estado && irs[i]->IR.Estado == irs[isPar ? (centro-2):(centro-1) ]->IR.Estado) ? 1:0;
+    DBG_VALUE_LN("Index central: ", (centro-1));
+    for(short i = (centro-2); i>=0; i--){
+        DBG_VALUE_LN("Index de valor Izquierda: ", i);
+        DBG_VALUE_LN("Estado de index a actual: ", irs[i].IR.Estado);
+        DBG_VALUE_LN("Estado anterior a actual: ", irs[i+1].IR.Estado);
+        DBG_VALUE_LN("Estado del centro: ", irs[centro-1].IR.Estado);
+        pIzq += (irs[i].IR.Estado == irs[i+1].IR.Estado && irs[i].IR.Estado == irs[centro-1].IR.Estado) ? (1):(0);
+    }
+    DBG_VALUE_LN("Valor de potencia a Izquierda: ", pIzq);
     
-    //Hacemos lo mismo para el lado derecho
-    for(uint8_t i= isPar ? (centro+1):(centro); i<=tamIrs; i++)
-        pDer +=(irs[i]->IR.Estado == irs[i-1]->IR.Estado && irs[i]->IR.Estado == irs[isPar ? (centro):(centro-1)]->IR.Estado) ? 1:0;
 
+    //Hacemos lo mismo para el lado derecho
+    for(uint8_t i= isPar ? (centro+1):(centro); i<tamIrs; i++){
+        DBG_VALUE_LN("Index de valor Derecha tomado: ", i);
+        DBG_VALUE_LN("Estado de index a actual: ", irs[i].IR.Estado);
+        DBG_VALUE_LN("Estado anterior a actual: ", irs[i-1].IR.Estado);
+        DBG_VALUE_LN("Estado del centro: ", irs[isPar ? (centro):(centro-1)].IR.Estado);
+        pDer +=(irs[i].IR.Estado == irs[i-1].IR.Estado && irs[i].IR.Estado == irs[isPar ? (centro):(centro-1)].IR.Estado) ? (1):(0);
+    }
+
+    DBG_VALUE_LN("Valor de potencia a Derecha: ", pDer);
 }
 void SeguidorLinea::ConfigVelocidad(Motor* M, uint8_t size,uint8_t vDer, uint8_t vIzq){
     //seteamos velocidad
@@ -224,8 +239,6 @@ void SeguidorLinea::ConfigVelocidad(Motor* M, uint8_t size,uint8_t vDer, uint8_t
 }
 
 void SeguidorLinea::MoveMotorsForIR(){
-    MDelAtrs(*Motores, CantidadMotores, true);
-    const unsigned int initMoveTine = millis();
 
     //Si coliciono con algo paramos, damos el sonido si es que hagrega y salimos
     if(IRColicioner.Pin != 0 && IRColicion() == IR_ACTIVATE){
@@ -237,9 +250,9 @@ void SeguidorLinea::MoveMotorsForIR(){
 
     //Si los lados quedaron iguales, vamos hacia adelante
     if(pDer == pIzq){
+        //Caminando hacia adelante
         ConfigVelocidad(*Motores, CantidadMotores, Vel);
-        //mantenemos
-        do{}while((millis() - initMoveTine) >= timeMove);
+        MDelAtrs(*Motores, CantidadMotores, true);
         return;
     }
     /*
@@ -247,15 +260,16 @@ void SeguidorLinea::MoveMotorsForIR(){
      * a la potencia asignada
     */
     //Damos la diferencia de velocidad
-    short dif = (vMax/irs[tamIrs]->pesoPotencia)* (pDer - pIzq);
-    dif = constrain(dif,0,vMax);
+    DBG_VALUE_LN("Peso potencia maximo: ", irs[tamIrs-1].pesoPotencia);
+    short dif = (vMax/irs[tamIrs-1].pesoPotencia)* (pDer - pIzq);
+    dif = constrain(dif,(-vMax),vMax);
+    DBG_VALUE_LN("Valor del diferencial: ", dif);
+
     //velocidades de cada motor
     short vDer = Vel + (dif);
     short vIzq = Vel - (dif);
     
     ConfigVelocidad(*Motores, CantidadMotores, constrain(vDer,0,vMax), constrain(vIzq,0,vMax));
-    //mantenemos el tiempo de movimiento a 3/4 partes del tiempo N
-    do{}while((millis() - initMoveTine) >= (timeMove/4)*3);
 }
 
 void SeguidorLinea::Camina(unsigned int activeTimeMillis){
@@ -264,12 +278,12 @@ void SeguidorLinea::Camina(unsigned int activeTimeMillis){
         DBG_PRINTLN("Sensores/Motores Incompletos, No puedo continuar asi");
         return;
     }
-
+/* 
     //Si tiene pin de buzzer pero no agrego notas, damos unas notas por defecto
     if(pinBuzzerSound != 0 && NotasCount == 0){
         SoundBuzzer notaDefault[2] PROGMEM = {{420,200}, {130,200}};
         AddNotas(notaDefault, 2, true);
-    }
+    } */
 
     unsigned int initTime = activeTimeMillis ? millis(): 0;
     do {
