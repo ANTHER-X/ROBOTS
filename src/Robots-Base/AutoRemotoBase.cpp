@@ -26,17 +26,30 @@ void AutoRemotoBase::TeclaMoveMotors(char del = 'W', char atr = 'S', char der ='
     else if(tecla == det) MStop(*Motores, CantidadMotores);
 }
 
+void AutoRemotoBase::SetPinName(const char* Pin, const char* BthName){
+    //Agregamos los nuevos parametros
+    #if defined(ESP32)
+        BTHESP.begin(BthName);
+        BTHESP.setPin(Pin)
+    #else
+        BTH.println("AT+NAME=" + *BthName);
+        BTH.println("AT+PSWD=" + *Pin);
+    #endif
+
+    DBG_PRINTLN("Pin And Name Have Been Set");
+}
+
 //Si usamos arduino y algun modulo BlueThoot
 void AutoRemotoBase::BTHMove(unsigned int recMillis, char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E'){
 
     //Movemos los motores
     TeclaMoveMotors(del,atr,der,izq,det,spedMas,spedMenos);
     
-    //nos mantenemos en movimiento por NSeg
+    //nos mantenemos en movimiento por NSeg, esto para mantener N tiempo, lo default son 2mls.
     delayMicroseconds(recMillis);
 
     //nos detenemos
-    Robot::MStop(*Motores, CantidadMotores);
+    MStop(*Motores, CantidadMotores);
 }
 
 //Aqui podemos usar ya sea modulos BlueThoot de arduino como HC05 o el de ESP32
@@ -44,12 +57,16 @@ AutoRemotoBase::AutoRemotoBase(uint8_t velocidad, uint8_t HCreceivePin, uint8_t 
     Vel = velocidad;
     motorType = typeMotor;
     #if defined(ESP32)
-        BTHESP.begin(115200);
+        BTHESP.begin("Auto RC");
+        BTHESP.setPin("1234");
         DBG_PRINTLN("BlueThoot de ESP32 Iniciado.");
     #else
         if(HCreceivePin < 1 || HCtransmitPin < 1) return;
         BTH = {HCreceivePin, HCtransmitPin};
         BTH.begin(9600);
+        BTH.println("AT+NAME=Auto RC");
+        BTH.println("AT+PSWD=1234");
+
         DBG_PRINTLN("BlueThoot de Arduino Iniciado.");
     #endif
 }

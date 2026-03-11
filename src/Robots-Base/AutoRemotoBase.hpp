@@ -38,10 +38,11 @@ class AutoRemotoBase : public Robot{
     public:
         AutoRemotoBase(uint8_t velocidad, uint8_t receivePin = 0, uint8_t transmitPin = 0, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE);
 
+        void SetPinName(const char* Pin = "1234", const char* BthName = "Auto RC");
 		/*Para agregar 4 motores o mas, le decimos el orden ->IZQ->DER->IZQ->DER.
         Pero ahora, en este caso, los 2 motores primeros (que serian 2 llantas), seran los que se mueven
         hacia adelante*/
 		virtual void Add4Motors(Motor RotIzq1, Motor RotDer1, Motor izq2, Motor der2);
 
-        virtual void Camina(unsigned int recMillis = 1, char del = 'w', char atr = 's', char der = 'd', char izq = 'a', char det = 'x', char spedMas = 'q', char spedMenos = 'e', unsigned int activeTimeMillis = 0);
+        virtual void Camina(unsigned int recMillis = 2, char del = 'w', char atr = 's', char der = 'd', char izq = 'a', char det = 'x', char spedMas = 'q', char spedMenos = 'e', unsigned int activeTimeMillis = 0);
 };
