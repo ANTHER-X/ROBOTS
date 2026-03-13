@@ -46,7 +46,7 @@ void SeguidorLinea::AddBuzzerPin(uint8_t pin){
     pinMode(pinBuzzerSound, OUTPUT);
 }
 
-void SeguidorLinea::AddNotas(SoundBuzzer notas[], uint8_t size, bool inFlash){
+void SeguidorLinea::AddNotas(const SoundBuzzer* const* notas, uint8_t size, bool inFlash){
 
     //Agregamos la variable para saber si las notas estan en flash o en RAM
     this->notasInFlash = inFlash;
@@ -58,10 +58,18 @@ void SeguidorLinea::AddNotas(SoundBuzzer notas[], uint8_t size, bool inFlash){
     }
 
     //Agregamos las notas
-    for(int8_t i=NotasCount; i<NotasCount+size; i++)
-        this->notas[i] = &notas[i];
+    for(int8_t i=NotasCount; i<NotasCount+size; i++){
+        SoundBuzzer* ptr;
 
+        if(inFlash) ptr = (SoundBuzzer*) pgm_read_ptr(&notas[i]);
+        else ptr = (SoundBuzzer*) notas[i];
+
+        this->notas[i] = ptr;
+    }
+    
     NotasCount += size;
+
+    DBG_VALUE_LN("Se han agregado las notas, las notas ahora son: ", NotasCount);
 }
 
 //Vemos colicion
@@ -70,9 +78,23 @@ bool SeguidorLinea::IRColicion(){
 }
 
 // Iniciamos el sonido de colicion
-void SeguidorLinea::StarSoundColicion(){
+void SeguidorLinea::StarSoundColicion(bool isColitioned){
     if(pinBuzzerSound == 0){
         DBG_PRINTLN("No se ha agregado un pin para el sonido de colision, por favor agrega uno para usar esta funcion");
+        return;
+    }else if(!isColitioned){
+        (buzzerType == BUZZER_PASSIVE) ? (noTone(pinBuzzerSound)):(digitalWrite(pinBuzzerSound, LOW));
+        digitalWrite(13,LOW);
+        DBG_PRINTLN("No se ha colicionado");
+        return;
+    }
+
+    //Si no hay notas cargadas y coliciono, reproducimos sonido por 50MS
+    if(NotasCount < 1){
+        digitalWrite(13,HIGH);
+        (buzzerType == BUZZER_PASSIVE) ? (tone(pinBuzzerSound,120,50)):(digitalWrite(pinBuzzerSound, HIGH));
+        initSoundTime = millis();
+        DBG_PRINTLN("Reproduciendo sonido por defecto.");
         return;
     }
 
@@ -81,44 +103,38 @@ void SeguidorLinea::StarSoundColicion(){
         if(buzzerType == BUZZER_PASSIVE) noTone(pinBuzzerSound);
         else if(buzzerType == BUZZER_ACTIVE) digitalWrite(pinBuzzerSound, LOW);
         actualIndexSoundPlayer = 0;
+        DBG_PRINTLN("Index de nota retornada a 0");
         return;
     }
 
+    //Si la nota esta en Flash, la sacamos, si no accedemos a la memoria donde se encuentra
+    SoundBuzzer* nota = nullptr;
+    //Tomamos las notas
+    if(notasInFlash){
+        memcpy_P(&nota, notas[actualIndexSoundPlayer], sizeof(SoundBuzzer));
+        DBG_PRINTLN("Nota de Flash tomada.");
+    }else{
+        nota = notas[actualIndexSoundPlayer];
+        DBG_PRINTLN("Nota de RAM tomada.");
+    }
+
     //Hacemos sonar el buzzer siempre que aun no termine el tiempo de la nota
-    else if((millis() - initSoundTime) >= notas[actualIndexSoundPlayer]->duracion){
-
-        //Em caso de ser un Buzzer Pasivo damos la frecuencia.
-        if(buzzerType == BUZZER_PASSIVE){
-            if(notas[actualIndexSoundPlayer]->frecuencia > 0){
-                //Si las notas estan en RAM accedemos a ellas
-                if(!notasInFlash) tone(pinBuzzerSound, notas[actualIndexSoundPlayer]->frecuencia);
-
-                //Si las notas estan en Flash las sacamos
-                else{
-                    SoundBuzzer nota;
-                    memcpy_P(&nota, notas[actualIndexSoundPlayer], sizeof(SoundBuzzer));
-                    tone(pinBuzzerSound, nota.frecuencia);
-                }
-            }
-            else
-                noTone(pinBuzzerSound);
-        }
-
-        //En caso de ser un buzer activo solo damos o no corriente
-        else if(buzzerType == BUZZER_ACTIVE){
-            //Si las notas estan el RAM, solo accedemos a las notas
-            if(!notasInFlash) digitalWrite(pinBuzzerSound, (notas[actualIndexSoundPlayer]->frecuencia > 0) ? HIGH:LOW);
-            
-            //Si las notas estan en Flash las sacamos
-            else{
-                SoundBuzzer nota;
-                memcpy_P(&nota, notas[actualIndexSoundPlayer], sizeof(SoundBuzzer));
-                digitalWrite(pinBuzzerSound, (nota.frecuencia > 0) ? HIGH:LOW);
-            }
+    if((millis() - initSoundTime) >= nota->duracion){
+        //Reproduciomos la nota
+        if(nota->frecuencia > 0 && buzzerType == BUZZER_PASSIVE){
+            tone(pinBuzzerSound, notas[actualIndexSoundPlayer]->frecuencia);
+            DBG_PRINTLN("Nota tocada");
+        }else if(nota->frecuencia < 0 && buzzerType == BUZZER_PASSIVE){
+            noTone(pinBuzzerSound);
+            DBG_PRINTLN("Silencio Tomado");
+        }else{
+            digitalWrite(pinBuzzerSound, (notas[actualIndexSoundPlayer]->frecuencia > 0) ? (HIGH):(LOW));
+            DBG_PRINTLN("Buzzer activo, nota tocada");
         }
         
         //Aumentamos para la siguiente nota y tomamos el tiempo actual
         initSoundTime = millis();
+        DBG_VALUE_LN("El index de las notas tocadas es: ", actualIndexSoundPlayer);
         actualIndexSoundPlayer++;
     }
 }
@@ -239,14 +255,18 @@ void SeguidorLinea::ConfigVelocidad(Motor* M, uint8_t size,uint8_t vDer, uint8_t
 }
 
 void SeguidorLinea::MoveMotorsForIR(){
+    bool colitioned = false;
 
     //Si coliciono con algo paramos, damos el sonido si es que hagrega y salimos
     if(IRColicioner.Pin != 0 && IRColicion() == IR_ACTIVATE){
         DBG_PRINTLN("Colision detectada, deteniendo...");
         MStop(*Motores, CantidadMotores);
-        StarSoundColicion();
-        return;
+        colitioned = true;
     }
+
+    //Reproducimos o no las notas musicales dependiendo de la colicion
+    StarSoundColicion(colitioned);
+    if(colitioned) return;
 
     //Si los lados quedaron iguales, vamos hacia adelante
     if(pDer == pIzq){
@@ -278,12 +298,6 @@ void SeguidorLinea::Camina(unsigned int activeTimeMillis){
         DBG_PRINTLN("Sensores/Motores Incompletos, No puedo continuar asi");
         return;
     }
-/* 
-    //Si tiene pin de buzzer pero no agrego notas, damos unas notas por defecto
-    if(pinBuzzerSound != 0 && NotasCount == 0){
-        SoundBuzzer notaDefault[2] PROGMEM = {{420,200}, {130,200}};
-        AddNotas(notaDefault, 2, true);
-    } */
 
     unsigned int initTime = activeTimeMillis ? millis(): 0;
     do {

@@ -46,7 +46,7 @@ protected:
 
     //Para poder saber si el sensor de colision se activo
     bool IRColicion();
-    void StarSoundColicion();
+    void StarSoundColicion(bool isColitioned);
 
     //Iniciamos las Stats de los IRs
     void InitStatsIRs();
@@ -59,7 +59,7 @@ public:
 
     void AddIRColicion(uint8_t pin);
     void AddBuzzerPin(uint8_t pin);
-    void AddNotas(SoundBuzzer* notas, uint8_t size, bool inFlash = false);
+    void AddNotas(const SoundBuzzer* const* notas, uint8_t size, bool inFlash = false);
     void AddIRs(uint8_t IRpines[], uint8_t tamIR);
     virtual void Camina(unsigned int TimeMinuts = 0) override;
 

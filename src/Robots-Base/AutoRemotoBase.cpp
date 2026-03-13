@@ -30,7 +30,7 @@ void AutoRemotoBase::SetPinName(const char* Pin, const char* BthName){
     //Agregamos los nuevos parametros
     #if defined(ESP32)
         BTHESP.begin(BthName);
-        BTHESP.setPin(Pin)
+        BTHESP.setPin(Pin);
     #else
         BTH.println("AT+NAME=" + *BthName);
         BTH.println("AT+PSWD=" + *Pin);
