@@ -15,7 +15,8 @@
 //tipo de motor
 enum MotorDriverType : uint8_t {
   DRIVER_PWM_SEPARATE = 0,
-  DRIVER_PWM_INTEGRATED = 1
+  DRIVER_PWM_INTEGRATED = 1,
+  NO_SETTER_SPEED = 2
 };
 
 //Tipo de Buzzer digital

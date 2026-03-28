@@ -55,3 +55,17 @@ el IR y el SUS no estan ya que ya estan explicados en el sumo base y este solo l
 | AddIRColicion | De forma opcional agregas el pin del sensor para detectar una colicion, el detectro es digital y se piensa usar con sensores IR
 | AddBuzzerPin | De forma opcional agregas el pin de tu buzzer digital, puede ser ya sea pasivo o activo
 | AddNotas | De forma opcional agregas un array de tipo **SoundBuzzer** para poder meter la melodia que quieras que suene al momento de colicionar, si necesitas mas notas modifica **MAXNOTAS** en configuracion
+
+
+
+## Sumo2USDelante
+
+Este sumo es una vercion la cual tiene 2 sensores ultrasonicos en la parte frontal asi como 2 sensores IR, ademas de 1 sensor IR en la parte trasera
+
+| Metodo | Descripcion
+|--------|-----------
+| Sumo2USDelante | Pide exactamente lo mismo que la clase de "SumoBase" |
+AddUSs | Este pide los pines de los 2 sensores Ultrasonicos que lleva adelante | 
+AddIRsDelante | Pides los pienes de los IR que lleva en la parte de delante |
+AddIrAtras | pide el pin del IR que lleva en la parte trasera
+

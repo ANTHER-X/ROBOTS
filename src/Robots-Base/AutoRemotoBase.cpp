@@ -9,7 +9,7 @@
 
 //AutoRemotoBase::
 
-void AutoRemotoBase::TeclaMoveMotors(char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E'){
+void AutoRemotoBase::TeclaMoveMotors(char del, char atr, char der, char izq, char det, char spedMas, char spedMenos){
     //dependiendo de la lectura, nos movemos o no
     if     (tecla == del) MDelAtrs(*Motores, CantidadMotores, true);
     else if(tecla == atr) MDelAtrs(*Motores, CantidadMotores, false);
@@ -26,48 +26,40 @@ void AutoRemotoBase::TeclaMoveMotors(char del = 'W', char atr = 'S', char der ='
     else if(tecla == det) MStop(*Motores, CantidadMotores);
 }
 
-void AutoRemotoBase::SetPinName(const char* Pin, const char* BthName){
+void AutoRemotoBase::begin(const char* Pin, const char* BthName, unsigned long baund){
     //Agregamos los nuevos parametros
     #if defined(ESP32)
         BTHESP.begin(BthName);
         BTHESP.setPin(Pin);
+        DBG_PRINTLN("BlueThoot de ESP32 Iniciado.");
     #else
+        BTH.begin(baund);
         BTH.println("AT+NAME=" + *BthName);
         BTH.println("AT+PSWD=" + *Pin);
+        DBG_PRINTLN("BlueThoot de Arduino Iniciado.");
     #endif
 
     DBG_PRINTLN("Pin And Name Have Been Set");
 }
-
 //Si usamos arduino y algun modulo BlueThoot
-void AutoRemotoBase::BTHMove(unsigned int recMillis, char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E'){
+void AutoRemotoBase::BTHMove(unsigned int recMillis, char del, char atr, char der, char izq, char det, char spedMas, char spedMenos){
 
     //Movemos los motores
     TeclaMoveMotors(del,atr,der,izq,det,spedMas,spedMenos);
     
     //nos mantenemos en movimiento por NSeg, esto para mantener N tiempo, lo default son 2mls.
-    delayMicroseconds(recMillis);
-
-    //nos detenemos
-    MStop(*Motores, CantidadMotores);
+    //delayMicroseconds(recMillis);
+    //Al final nos detenemos
+    //MStop(*Motores, CantidadMotores);
 }
 
 //Aqui podemos usar ya sea modulos BlueThoot de arduino como HC05 o el de ESP32
 AutoRemotoBase::AutoRemotoBase(uint8_t velocidad, uint8_t HCreceivePin, uint8_t HCtransmitPin, MotorDriverType typeMotor){
     Vel = velocidad;
     motorType = typeMotor;
-    #if defined(ESP32)
-        BTHESP.begin("Auto RC");
-        BTHESP.setPin("1234");
-        DBG_PRINTLN("BlueThoot de ESP32 Iniciado.");
-    #else
+    #if defined(_AVR_)
         if(HCreceivePin < 1 || HCtransmitPin < 1) return;
         BTH = {HCreceivePin, HCtransmitPin};
-        BTH.begin(9600);
-        BTH.println("AT+NAME=Auto RC");
-        BTH.println("AT+PSWD=1234");
-
-        DBG_PRINTLN("BlueThoot de Arduino Iniciado.");
     #endif
 }
 
@@ -91,30 +83,28 @@ void AutoRemotoBase::Add4Motors(Motor RotIzq1, Motor RotDer1, Motor izq2, Motor 
 
 void AutoRemotoBase::Camina(unsigned int recMillis, char del, char atr, char der, char izq, char det, char spedMas, char spedMenos, unsigned int activeTimeMillis){
     //Si no hay motores o no hay BlueThoot no hacemos nada
-    if(CantidadMotores == 0){
-        DBG_PRINTLN("Sin motores. Regresando.");
-        return;
+    if(CantidadMotores != 0){
+        //Si es que hay motores, configuramos las variables iniciales
+        unsigned long initTime = activeTimeMillis ? millis(): 0;//tiempo de inicio si es que agrega (default '0')
+
+        //si si hay motores, nos movemos por medio del blueThoot
+        do{
+            //lo leemos dependiendo el BTH
+            #if defined(ESP32) //ESP
+                if(BTHESP.available()){
+                    tecla = BTHESP.read();
+                    BTHMove(recMillis,del,atr,der,izq,det,spedMas,spedMenos);
+                }
+            #else   //Arduino
+                if(BTH.available()){
+                    tecla = BTH.read();
+                    BTHMove(recMillis,del,atr,der,izq,det,spedMas,spedMenos);
+                }
+            #endif
+        //si no configura el tiempo se mantendra siempre, si si el bucle terminara cuando el tiempo se acabe
+        }while( ( activeTimeMillis == 0 || (initTime > 0 && (millis() - initTime < activeTimeMillis))) );
+
+        DBG_PRINTLN("Tiempo Agotado. Movimiento terminado.");
     }
     
-    //Si es que hay motores, configuramos las variables iniciales
-    unsigned int initTime = activeTimeMillis ? millis(): 0;//tiempo de inicio si es que agrega (default '0')
-
-    //si si hay motores, nos movemos por medio del blueThoot
-    do{
-        //lo leemos dependiendo el BTH
-        #if defined(ESP32) //ESP
-            if(BTHESP.available()){
-                tecla = BTHESP.read();
-                BTHMove(recMillis,del,atr,der,izq,det,spedMas,spedMenos);
-            }
-        #else   //Arduino
-            if(BTH.available()){
-                tecla = BTH.read();
-                BTHMove(recMillis,del,atr,der,izq,det,spedMas,spedMenos);
-            }
-        #endif
-    //si no configura el tiempo se mantendra siempre, si si el bucle terminara cuando el tiempo se acabe
-    }while( ( activeTimeMillis == 0 || (initTime > 0 && (millis() - initTime < activeTimeMillis))) );
-
-    DBG_PRINTLN("Tiempo Agotado. Movimiento terminado.");
 }

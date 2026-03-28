@@ -30,7 +30,7 @@ class AutoRemotoBase : public Robot{
         #endif
 
         //Metodos privados para el movimiento
-        virtual void TeclaMoveMotors(char del, char atr, char der, char izq, char det, char spedMas, char spedMenos);
+        virtual void TeclaMoveMotors(char del = 'W', char atr = 'S', char der ='D', char izq = 'A', char det = 'Z', char spedMas = 'Q', char spedMenos = 'E');
 
         //Si usamos arduino y algun modulo BlueThoot
         virtual void BTHMove(unsigned int recSeg, char del, char atr, char der, char izq, char det, char spedMas, char spedMenos);
@@ -38,11 +38,11 @@ class AutoRemotoBase : public Robot{
     public:
         AutoRemotoBase(uint8_t velocidad, uint8_t receivePin = 0, uint8_t transmitPin = 0, MotorDriverType typeMotor = DRIVER_PWM_SEPARATE);
 
-        void SetPinName(const char* Pin = "1234", const char* BthName = "Auto RC");
+        void begin(const char* Pin = "1234", const char* BthName = "Auto RC", unsigned long baund = 9600);
 		/*Para agregar 4 motores o mas, le decimos el orden ->IZQ->DER->IZQ->DER.
         Pero ahora, en este caso, los 2 motores primeros (que serian 2 llantas), seran los que se mueven
         hacia adelante*/
 		virtual void Add4Motors(Motor RotIzq1, Motor RotDer1, Motor izq2, Motor der2);
 
-        virtual void Camina(unsigned int recMillis = 2, char del = 'w', char atr = 's', char der = 'd', char izq = 'a', char det = 'x', char spedMas = 'q', char spedMenos = 'e', unsigned int activeTimeMillis = 0);
+        virtual void Camina(unsigned int recMillis = 2, char del = 'W', char atr = 'S', char der = 'D', char izq = 'A', char det = 'X', char spedMas = 'Q', char spedMenos = 'E', unsigned int activeTimeMillis = 0);
 };

@@ -78,15 +78,6 @@ void SumoBase::MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &at
             atUsed = true; //decimos que atacamos
         }
     }
-
-    //si esta atacando y finalizo el tiempo del ataque, terminamos el ataque
-    if(atUsed && (millis() - timer) >= TRec){
-        DBG_PRINTLN("\n\nATAQUE FINALIZADO.\n\n");
-        atUsed = false; //terminamos el ataque
-        ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
-        MDerIzq(*Motores, CantidadMotores, RGiro);
-        //MStop(Motores[0], CantidadMotores);
-    }
 }
 
 
@@ -101,12 +92,6 @@ void SumoBase::MoverPorInfrarrojos(unsigned long &timer, bool &used){
                 timer = millis(); //iniciamos donde comenzo hacia atras
                 used = true;//decimos que se mueve hacia atras
             }
-        }
-
-        //si ya pasaron Nseg moviendose hacia atras
-        if(used && (millis() - timer) >= TRec){
-            DBG_PRINTLN("\n\nMOVIMIENTO DE IR TERMINADO.\n\n");
-            used = false; //decimos que ya no movemos hacia atras
         }
     #endif
 }
@@ -130,6 +115,23 @@ void SumoBase::FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAcc
         MDerIzq(*Motores, CantidadMotores, RGiro);
         ataque = false;
         DBG_PRINTLN("\n\nATAQUE FINALIZADO\n\n");
+    }
+}
+
+void SumoBase::MovimientoTerminado(bool &IRused, bool &USUsed, unsigned long& timer){
+    //si ya pasaron Nseg moviendose hacia atras
+    if(IRused && (millis() - timer) >= TRec){
+        DBG_PRINTLN("\n\nMOVIMIENTO DE IR TERMINADO.\n\n");
+        IRused = false; //decimos que ya no movemos hacia atras
+    }
+        
+    //si esta atacando y finalizo el tiempo del ataque, terminamos el ataque
+    if(USUsed && (millis() - timer) >= TRec){
+        DBG_PRINTLN("\n\nATAQUE FINALIZADO.\n\n");
+        USUsed = false; //terminamos el ataque
+        ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
+        MDerIzq(*Motores, CantidadMotores, RGiro);
+        //MStop(Motores[0], CantidadMotores);
     }
 }
 
@@ -247,7 +249,7 @@ void SumoBase::Camina(unsigned int activeTimeMillis){
         unsigned int initTime = activeTimeMillis ? millis(): 0;
 
         ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
-        MDerIzq(*Motores, CantidadMotores ,RGiro); //giramos
+        MDerIzq(*Motores, CantidadMotores, RGiro); //giramos
 
         do{
 
@@ -260,6 +262,7 @@ void SumoBase::Camina(unsigned int activeTimeMillis){
             Extras();
             MoverPorSUS(InicioAtaque, usAccion, ataque, usDetected);
             Ataque(ataque, Atras, InicioAtaque, InicioAtras);
+            MovimientoTerminado(Atras, ataque, InicioAtaque);
             FinAtaque(ataque, Atras, InicioAtras, InicioAtaque);
 
         }while( ( activeTimeMillis == 0 || (initTime > 0 && (millis() - initTime < activeTimeMillis))) );

@@ -54,6 +54,8 @@ class SumoBase : public Robot{
 		virtual void MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &atUsed, bool &usUsed);
 		virtual void MoverPorInfrarrojos(unsigned long &timer, bool &used);
 
+		virtual void MovimientoTerminado(bool &IRused, bool &USUsed, unsigned long& timer);
+
 		virtual void FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAccion, unsigned long timeAtaque);
 
 		virtual void Ataque(bool &ataque, bool &infUsed, unsigned long &timeAtaque, unsigned long &timeInf);

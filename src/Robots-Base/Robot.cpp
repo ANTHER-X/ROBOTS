@@ -33,6 +33,7 @@ void Robot::AddMotors(Motor* Mtrs, uint8_t size) {
 void Robot::ConfigVelocidad(Motor M[], uint8_t size, uint8_t vel){
     //seteamos velocidad
 	for(uint8_t i=0; i<size; i++){
+        if(M[i].PWM == 0 || motorType == NO_SETTER_SPEED) return;
 		if(motorType == DRIVER_PWM_SEPARATE) analogWrite(M[i].PWM, vel);
         else  analogWrite(M[i].L1, vel);
         //debugin
@@ -83,14 +84,15 @@ void Robot::MStop(Motor* M, uint8_t size){
 //Para definir los motores
 void Robot::SetMotor(Motor* M, uint8_t vel){
     //Le damos un modo al pines
-    pinMode(M->L1, OUTPUT);
+    if(M->L1 == 0 || M->L2 == 0) return;
+     pinMode(M->L1, OUTPUT);
     pinMode(M->L2, OUTPUT);
     
     if(motorType == DRIVER_PWM_SEPARATE){
         pinMode(M->PWM, OUTPUT);
         analogWrite(M->PWM, vel);
     }
-    else{
+    else if(motorType == DRIVER_PWM_INTEGRATED){
         analogWrite(M->L1, vel);
         M->PWM = M->L1;
     }
