@@ -22,9 +22,7 @@
     #include "Robots-Base/Robot.hpp"
 
     //Sumos
-    #include "Robots-Base/SumoBase.hpp"
-    #include "Robots-Simples/SumoSimple.hpp"
-    #include "Robots-Simples/Sumo-2US-Delante.hpp"
+    #include "Robots-Simples/Sumo.hpp"
 
     //RLB (Resuelve Laberintos Base)
     #include "Robots-Base/RLBase.hpp"

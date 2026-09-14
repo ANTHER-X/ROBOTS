@@ -5,7 +5,7 @@
  * GitHub: https://github.com/ANTHER-X/ROBOTS
 */
 
-#include "SeguidorLinea.hpp"
+#include <Robots-Simples/SeguidorLinea.hpp>
 
 SeguidorLinea::SeguidorLinea(uint8_t velocidadMedia, uint8_t velocidadMaxima, MotorDriverType motorDriverType, BuzzerType buzzerType){
     this->motorType = motorDriverType;
@@ -91,7 +91,6 @@ void SeguidorLinea::StarSoundColicion(bool isColitioned){
 
     //Si no hay notas cargadas y coliciono, reproducimos sonido por 50MS
     if(NotasCount < 1){
-        digitalWrite(13,HIGH);
         (buzzerType == BUZZER_PASSIVE) ? (tone(pinBuzzerSound,120,50)):(digitalWrite(pinBuzzerSound, HIGH));
         initSoundTime = millis();
         DBG_PRINTLN("Reproduciendo sonido por defecto.");
@@ -239,6 +238,8 @@ void SeguidorLinea::PotenciaEquilibrio(){
 
     DBG_VALUE_LN("Valor de potencia a Derecha: ", pDer);
 }
+
+
 void SeguidorLinea::ConfigVelocidad(Motor* M, uint8_t size,uint8_t vDer, uint8_t vIzq){
     //seteamos velocidad
 	for(uint8_t i=0; i<size; i++){

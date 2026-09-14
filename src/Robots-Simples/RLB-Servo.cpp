@@ -5,7 +5,7 @@
  * GitHub: https://github.com/ANTHER-X/ROBOTS
 */
 
-#include "RLB-Servo.hpp"
+#include <Robots-Simples/RLB-Servo.hpp>
 
 void RLBServo::TomaDistanciaMayor(){
     //Tomamos las distancias moviendonos ciertos grados con el servoMotor

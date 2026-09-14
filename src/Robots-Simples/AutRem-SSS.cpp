@@ -5,7 +5,7 @@
  * GitHub: https://github.com/ANTHER-X/ROBOTS
 */
 
-#include "AutRem-SSS.hpp"
+#include <Robots-Simples/AutRem-SSS.hpp>
 
 //AutRemSSS::
 void AutRemSSS::AddMotors(Motor* Mtrs, uint8_t size){

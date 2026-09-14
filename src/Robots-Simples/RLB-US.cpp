@@ -5,7 +5,7 @@
  * GitHub: https://github.com/ANTHER-X/ROBOTS
 */
 
-#include "RLB-US.hpp"
+#include <Robots-Simples/RLB-US.hpp>
 
 void RLBUS::TomaDistanciaMayor(){
     //Tomamos datos

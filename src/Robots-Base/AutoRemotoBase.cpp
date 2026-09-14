@@ -5,7 +5,7 @@
  * GitHub: https://github.com/ANTHER-X/ROBOTS
 */
 
-#include "AutoRemotoBase.hpp"
+#include <Robots-Base/AutoRemotoBase.hpp>
 
 //AutoRemotoBase::
 

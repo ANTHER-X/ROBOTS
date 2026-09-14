@@ -7,7 +7,7 @@
 
 
 #include <Arduino.h>
-#include "Robot.hpp"
+#include <Robots-Base/Robot.hpp>
 
 
 #pragma once
@@ -17,7 +17,7 @@ Sumo Base, es el mas simple, solo es para ejemplo pero si alguien gusta, podria 
 De este se desprende el resto de sumos, el simple toma este y le agrega un par de cositas mas,
 sencillas pero ya funcionales para probar con algun proyecto
 */
-class SumoBase : public Robot{
+class Sumo : public Robot{
 
     protected:
         
@@ -44,38 +44,28 @@ class SumoBase : public Robot{
 
 		//Para sensores Infrarrojos
 		//toma el estado de los infrarrojos
-		void ActivaInfrarrojo(Infrarrojo &INF);
-		bool UsaInfrarrojo(Infrarrojo &INF);
-		void UsaAllInfrarrojo();
+		void ActivaIR(Infrarrojo &IR);
+		bool UsaIR(Infrarrojo &IR);
+		void UsaAllIR();
 
 
 		virtual void Extras(){}
 
 		virtual void MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &atUsed, bool &usUsed);
-		virtual void MoverPorInfrarrojos(unsigned long &timer, bool &used);
-
-		virtual void MovimientoTerminado(bool &IRused, bool &USUsed, unsigned long& timer);
+		virtual void MoverPorIR(unsigned long &timer, bool &used, unsigned long timerIR_Uso);
 
 		virtual void FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAccion, unsigned long timeAtaque);
-
-		virtual void Ataque(bool &ataque, bool &infUsed, unsigned long &timeAtaque, unsigned long &timeInf);
-
-		//Define los infrarrojos
-		void AddInfra(uint8_t id, uint8_t pin);
-		//Los Ultrasonicos para los ojos
-		void AddSUS(uint8_t id, uint8_t triger, uint8_t echo);
 		
-		virtual bool ExistIR(int ID);
-		virtual bool ExistSUS(int ID);
+		virtual bool ExistSUS(int16_t angle);
+		virtual bool ExistIR(int16_t angle);
 
     public:
-        SumoBase(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t _DistAtaq, unsigned int TRecMiliSec, unsigned int TGiroMiliSec, MotorDriverType typeMotor);
+        Sumo(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t DistAtaqCM, uint16_t DiametroCM, uint16_t Vel_CMS, unsigned int TRecRect, MotorDriverType typeMotor);
 
-		virtual void AddInfraAdelante(uint8_t pin);
-
-		virtual void AddSUSAdelante(uint8_t triger, uint8_t echo);
-
-		virtual void Add2Motors(Motor L1, Motor L2);
+		//Define los infrarrojos
+		void AddIR(int16_t angle, uint8_t pin);
+		//Los Ultrasonicos para los ojos
+		void AddSUS(int16_t angle, uint8_t triger, uint8_t echo);
 
         virtual void Camina(unsigned int TimeMinuts = 0) override;
 };

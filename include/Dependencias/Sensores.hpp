@@ -36,14 +36,14 @@ struct Motor{
 struct UltraSonico{
 	uint8_t  Pin[2];//pines
 	bool Cerca;//para ver si la distancia de choque se activa
-	uint8_t ID;
+	int16_t angle; // Angulo en grados
 };
 
 //para Controlar la estancia de un sensor infrarrojo
 struct Infrarrojo{
 	uint8_t  Pin; //pin
 	bool Estado; //para ver si capturo algun valor (0->sin luz, 1->Con luz)
-	uint8_t ID;
+	int16_t angle;
 };
 
 /*
