@@ -9,7 +9,8 @@
 #ifndef SEGUIDORLINEA_HPP
 #define SEGUIDORLINEA_HPP
 
-#include "../Robots-Base/Robot.hpp"
+#include <Robots-Base/Robot.hpp>
+#include <modules/SoundSystem.hpp>
 
 class SeguidorLinea : public Robot{
 protected:
@@ -24,19 +25,8 @@ protected:
     //IR para detectar coliciones
     Infrarrojo IRColicioner = {0};
 
-    //Buzzer y datos para reproducir sonido en caso de coliciones
-    BuzzerType buzzerType;
-    //Pin para el buzzer
-    uint8_t pinBuzzerSound = 0;
-    //Cadena de notas y su cantidad
-    SoundBuzzer* notas[MAXNOTAS];
-    uint8_t NotasCount = 0;
-    //indice actual de reproduccion
-    uint8_t actualIndexSoundPlayer = 0;
-    //Tiempo de inicio de la reproduccion actual
-    unsigned long initSoundTime = 0;
-    //Para saber donde se guardan las notas
-    bool notasInFlash = false;
+    // Sistema de sonido
+    SoundSystem* Sound = nullptr;
 
     void AccionaAllIR();
     void MoveMotorsForIR();
@@ -45,7 +35,7 @@ protected:
 	void ConfigVelocidad(Motor* M, uint8_t size, uint8_t vDer, uint8_t vIzq);
 
     //Para poder saber si el sensor de colision se activo
-    bool IRColicion();
+    inline bool IRColicion(){return (digitalRead(IRColicioner.Pin) == IR_ACTIVATE); }
     void StarSoundColicion(bool isColitioned);
 
     //Iniciamos las Stats de los IRs
@@ -58,8 +48,7 @@ public:
     SeguidorLinea(uint8_t velocidadMedia, uint8_t velocidadMaxima = 255, MotorDriverType motorDriverType = DRIVER_PWM_SEPARATE, BuzzerType buzzerType = BUZZER_ACTIVE);
 
     void AddIRColicion(uint8_t pin);
-    void AddBuzzerPin(uint8_t pin);
-    void AddNotas(const SoundBuzzer* const* notas, uint8_t size, bool inFlash = false);
+    inline void AddSoundSystem(SoundSystem* soundSystem){Sound = soundSystem; }
     void AddIRs(uint8_t IRpines[], uint8_t tamIR);
     virtual void Camina(unsigned int TimeMinuts = 0) override;
 

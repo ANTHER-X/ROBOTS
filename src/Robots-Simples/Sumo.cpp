@@ -76,12 +76,14 @@ void Sumo::MoverPorSUS(unsigned long &timer, unsigned long &timerUS, bool &atUse
             MDelAtrs(*Motores, CantidadMotores, true);
             timer = millis(); //marcamos el inicio del ataque
             atUsed = true; //decimos que atacamos
+            // Reproducimos sonido de ataque
+            Sound->Play(MusicIndex[0]);
             return;
         }
 
         // Si no vamos a detectar los demas sensores
         if (!usUsed && !atUsed && UltraSonicos[i].Cerca){
-            DBG_PRINTLN("\n\nATACANDO.\n\n");
+            DBG_PRINTLN("\nGirando.\n");
 
             // Configuramos la velodicidad de giro y giramos
             ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
@@ -97,7 +99,7 @@ void Sumo::MoverPorSUS(unsigned long &timer, unsigned long &timerUS, bool &atUse
         }
     }
 
-    // En caso de que este girando y se termine, paramos el giro y decimos que ahora si puede atacar
+    // En caso de que este termine de girar, paramos todo
     if(usUsed && (millis() - timer) >= timerUS){
         DBG_PRINTLN("Giro Finalizado");
         usUsed = false;
@@ -123,7 +125,9 @@ void Sumo::MoverPorIR(unsigned long &timer, bool &used, unsigned long timerIR_Us
 
                     MDelAtrs(*Motores, CantidadMotores, false);
                     timerIR_Uso = TRec;
-                    continue;
+                    // Reproducimos sonido de back
+                    Sound->Play(MusicIndex[1]);
+                    break;
                 }
 
                 // Contrario, atras -> Mueves adelante
@@ -131,20 +135,27 @@ void Sumo::MoverPorIR(unsigned long &timer, bool &used, unsigned long timerIR_Us
 
                     MDelAtrs(*Motores, CantidadMotores, true);
                     timerIR_Uso = TRec;
-                    continue;
+                    break;
                 }
 
+                ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
                 MDerIzq(*Motores, CantidadMotores, (Infrarrojos[i].angle > 0)); // Giramos de acuerdo a donde esta
                 // Sacamos el timer para ver el tiempo de giro
                 timerIR_Uso = (abs(UltraSonicos[i].angle) * TGiro) / 180;
+                
+                // Reproducimos sonido en caso de que se salga
+                Sound->Play(MusicIndex[2]);
+                break;
             }
         }
 
-        // Vemos si termino de girar
+        // Si termina de girar paramos y detenemos todo
         if(used && (millis() - timer) >= timerIR_Uso){
             DBG_PRINTLN("Giro Finalizado");
             used = false;
             MStop(*Motores, CantidadMotores);
+            Sound->Stop();
+            Sound->ResetSounds();
         }
     #endif
 }
@@ -158,6 +169,7 @@ void Sumo::FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAccion,
             MDerIzq(*Motores, CantidadMotores, RGiro);
             infAccion = false;
             ataque = false;
+            Sound->Stop();
             DBG_PRINTLN("Buscando");
         }
     #endif
@@ -167,6 +179,8 @@ void Sumo::FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAccion,
         ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
         MDerIzq(*Motores, CantidadMotores, RGiro);
         ataque = false;
+        Sound->Stop();
+        Sound->ResetSounds();
         DBG_PRINTLN("\n\nATAQUE FINALIZADO\n\n");
     }
 }
@@ -228,16 +242,27 @@ bool Sumo::ExistSUS(int16_t angle){
 
 Sumo::Sumo(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t DistAtaqCM, uint16_t DiametroCM, uint16_t Vel_CMS, unsigned int TRecRect, MotorDriverType typeMotor){
     
-    /* Sacamos El tiempo de giro para 180 grados ya que es el maximo giro (por eso 2UL)
-       Escalamos para evitar decimales subiendo 4 decimales a entero y guardamos el tiempo en milisegundos*/
-    TGiro = (31416UL * DiametroCM * 1000UL) /
-            (2UL * Vel_CMS * 10000UL);
-    
-    TRec = TRecRect;
-    Vel = Velocidad;
+    motorType = typeMotor;
     VelGiro = VelocidadGiro;
     DistAtaq = DistAtaqCM;
-    motorType = typeMotor;
+    
+    // Si el motor permite PWM
+    if(motorType != MotorDriverType::NO_SETTER_SPEED){
+        TRec = TRecRect;
+        Vel = Velocidad;
+    }
+    // Si no hay PWM ponemos potencia maxima
+    else TRec = Vel = 255;
+
+    /* Sacamos El tiempo de giro para 180 grados ya que es el maximo giro (por eso 2UL).
+       Escalamos para evitar decimales subiendo 4 decimales a entero y guardamos el tiempo en milisegundos.
+       Tomamos el porcentaje de velocidad de acuerdo a la potencia ingresada, Vel_CMS representa potencia 255 maxima*/
+    if(VelGiro > 0){ // Si hay potencia de giro
+        TGiro = (31416UL * DiametroCM * 255UL * 1000UL) /
+            (2UL * Vel_CMS * VelGiro * 10000UL);    
+    }
+    // Si no hay potencia no hacemos nada.
+    else TGiro = 0;
 }
 
 void Sumo::Camina(unsigned int activeTimeMillis){
@@ -262,7 +287,6 @@ void Sumo::Camina(unsigned int activeTimeMillis){
         MDerIzq(*Motores, CantidadMotores, RGiro); //giramos
 
         do{
-
             //Movimiento completo del robot
             UsaAllIR();
             MoverPorIR(InicioIR, Atras, TimeIRUsed);

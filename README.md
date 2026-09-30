@@ -14,6 +14,7 @@ La librería está pensada para ser modificable y extensible según las necesida
 - ESP32
 
 ## Instalación
+Para mayor comodidad, la sección **Releases** contiene versiones listas para usar tanto para Arduino IDE como para Visual Studio Code + PlatformIO.
 
 ### Arduino IDE
 
@@ -80,7 +81,7 @@ uint8_t DistanciaAtaque_CM = 20;
 // Diámetro del Sumo en CM
 uint16_t diametro = 7;
 
-// Distancia de recorrido en recta en CM por segundo
+// Velocidad de recorrido maxima de recta en centrimetros por segundo (CM/S)
 uint16_t Velocidad_CM_seg = 28;
 
 // Tiempo en MS que durará su recorrido en recta si detecta solo al enemigo o nada más

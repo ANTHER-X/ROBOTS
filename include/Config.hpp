@@ -21,12 +21,13 @@
 
 #define IR_ACTIVATE HIGH //para activar la accion de los infrarrojos al detectar algo
 
-//Cantidades maximas de sensores
-#define MAXNOTAS 4
-#define MAXMOTORS 8
-#define MAXIRSEGUIDOR 16
-#define MAXSUS 4
-#define MAXIR 4
+//Cantidades maximas
+#define MAXMOTORS 8 // Motores
+#define MAXIRSEGUIDOR 16 // IR de Segudor Linea
+#define MAXSUS 4 // Sensores Ultrasonicos Globales
+#define MAXIR 4 // IR Globales
+#define MAXNOTAS 4 // Notas Maximas por canciones
+#define MAXSOUNDS 2 // Canciones Maximas
 
 //Mas macros para depuracion:
 #if (SERIAL_DEBUG == 1)

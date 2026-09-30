@@ -18,6 +18,9 @@
     #include "Dependencias/Sensores.hpp"
     #include "Dependencias/Utilidades.hpp"
 
+    // Modulos
+    #include <modules/SoundSystem.hpp>
+
     //Robot Base
     #include "Robots-Base/Robot.hpp"
 

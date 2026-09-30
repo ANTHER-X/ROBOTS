@@ -5,24 +5,17 @@
  * GitHub: https://github.com/ANTHER-X/ROBOTS
 */
 
-/*Sensores*/
-
 #pragma once
 
 //para iniciar la RandomSeed
 #define RSeed randomSeed(analogRead(0));
 
-//tipo de motor
+
+/*###### MOTORES ######*/
 enum MotorDriverType : uint8_t {
   DRIVER_PWM_SEPARATE = 0,
   DRIVER_PWM_INTEGRATED = 1,
   NO_SETTER_SPEED = 2
-};
-
-//Tipo de Buzzer digital
-enum BuzzerType : uint8_t {
-	BUZZER_ACTIVE = 0,
-	BUZZER_PASSIVE = 1
 };
 
 //para los motores que usara
@@ -32,6 +25,9 @@ struct Motor{
 	uint8_t  PWM;
 };
 
+
+
+/*###### Sensores ######*/
 //para Contener los sensores ultrasonicos
 struct UltraSonico{
 	uint8_t  Pin[2];//pines
@@ -46,16 +42,29 @@ struct Infrarrojo{
 	int16_t angle;
 };
 
-/*
- * Para el seguidor de linea pondremos mas estados para validar correctamente
- * cada sensor
-*/
+// Para el seguidor de linea pondremos un peso
 struct IRSeguidorLinea{
 	Infrarrojo IR;
 	int8_t pesoPotencia; 
 };
 
-struct SoundBuzzer {
+
+
+/*###### SONIDO ######*/
+
+enum NotesStorage : uint8_t{
+	NOTES_RAM = 0,
+	NOTES_FLASH = 1
+};
+
+// Notas de sonido
+struct SoundNote {
     uint16_t frecuencia; // Frecuencia en Hz (0 para silencio)
     uint16_t duracion;   // Tiempo en ms
+};
+
+// Tipo de Buzzer
+enum BuzzerType : uint8_t {
+	BUZZER_ACTIVE = 0,
+	BUZZER_PASSIVE = 1
 };
