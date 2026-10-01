@@ -11,7 +11,7 @@ void SoundSystem::AddBuzzerPin(uint8_t pin){
 }
 
 
-void SoundSystem::AddMusic(const SoundNote* const* Music, uint8_t MusicSize, bool active){
+void SoundSystem::AddMusic(const Nota* const* Music, uint8_t MusicSize, bool active){
     if(SoundSize > MAXSOUNDS){
         DBG_PRINTLN("Cantidad no valida de notas!");
         return;
@@ -28,7 +28,7 @@ void SoundSystem::AddMusic(const SoundNote* const* Music, uint8_t MusicSize, boo
     DBG_PRINTLN("Se ah agregado la musica al sistema");
 }
 
-uint8_t SoundSystem::GetIndexMusic(const SoundNote* const* Music){
+uint8_t SoundSystem::GetIndexMusic(const Nota* const* Music){
 
     for(int8_t i=0; i<SoundSize; i++)
         if(Notas[i] == Music) return i; // Retornamos la que coincida
@@ -48,18 +48,29 @@ void SoundSystem::ResetSounds(bool All_AllNoActual){
 
 
 void SoundSystem::PlayMusic(uint8_t soundIndex){
-    // Index invalido
-    if(soundIndex >= SoundSize){
+    // Index invalido o Melodia inactiva
+    if(soundIndex >= SoundSize || NotesActive[soundIndex] == false){
         DBG_PRINTLN("Melodia inexistente!!!");
+        Stop();
         return;
     }
+    
+    // Tomamos una lectura de millis() para la funcion
+    const uint32_t now = millis();
 
     // Nota termina, restamos para validar si se termino la nota, casteamos a signed para evitar
-    // desbordamientos
-    if( (uint32_t)((millis() - ActualNoteEndPlayTime)) < 1) return;
+    // desbordamientos. Y vemos si es que hubo una pausa
+    if( (int32_t)((now - ActualNoteEndPlayTime)) < 0) return;
     else DBG_PRINTLN("Nota terminada, Reproduciendo la siguiente...");
 
-    // Si se termino la melodia regresamos a la primer nota y pausamos
+    // Tomamos datos para ver si reanudamos la nota anterior si hubo pausa
+    const bool mismaMelodia = (soundIndex == ISoundCount);
+    // Si no era la misma melodia descartamos el retraso
+    if(!mismaMelodia) FaltanteStopNoteDuration = 0;
+    // Vemos si se necesira reanudar la melodia
+    const bool reanuda = mismaMelodia && FaltanteStopNoteDuration > 0;
+
+    // Si se termino la melodia y no necesitamos reanudar
     if(INotesCount[soundIndex] >= NotesSize[soundIndex]){
         ISoundCount = soundIndex;
         // Pausamos segun el tipo de buzzer
@@ -77,48 +88,58 @@ void SoundSystem::PlayMusic(uint8_t soundIndex){
         return;
     }
 
+    // Si reanudamos la nota faltante de terminar era la anterior ya que al final aumentamos
+    const uint8_t idNotaActual = (reanuda ? (INotesCount[soundIndex] - 1) : INotesCount[soundIndex]);
+
     // Dependiendo donde esta la nota, la sacamos
-    const SoundNote* const* Lista = Notas[soundIndex];
-    const SoundNote* nota;
-    // Tomamos la nota
+    const Nota* const* Lista = Notas[soundIndex];
+    Nota nota;   // copia local en RAM
     if(notesStorage == NotesStorage::NOTES_FLASH){
-        nota = (const SoundNote*)pgm_read_ptr(&Lista[INotesCount[soundIndex]]);
+        const Nota* notaPtr = (const Nota*)pgm_read_ptr(&Lista[idNotaActual]);
+        memcpy_P(&nota, notaPtr, sizeof(Nota));
         DBG_PRINTLN("Nota Tomada desde Flash.");
     }else{
-        nota = Lista[INotesCount[soundIndex]];
+        nota = *Lista[idNotaActual];
         DBG_PRINTLN("Nota Tomada desde RAM.");
     }
 
+    // Tomamos el tiempo de la duracion de la nota de acuerdo a si se reanudo o no
+    const uint32_t durationNota = (reanuda ? (FaltanteStopNoteDuration) : (nota.duracion));
+    FaltanteStopNoteDuration = 0;
+
     // Reproducimos la nota
     // En Buzzer Pasivo
-    if(nota->frecuencia > 0 && buzzerType == BUZZER_PASSIVE){ // Hay sonido
-        tone(BuzzerPin, nota->frecuencia);
+    if(nota.frecuencia > 0 && buzzerType == BUZZER_PASSIVE){ // Hay sonido
+        tone(BuzzerPin, nota.frecuencia);
         DBG_PRINTLN("Buzzer Pasivo: Nota En reproduccion");
     }
-    else if(nota->frecuencia <= 0 && buzzerType == BUZZER_PASSIVE){ // No hay sonido
+    else if(nota.frecuencia <= 0 && buzzerType == BUZZER_PASSIVE){ // No hay sonido
         noTone(BuzzerPin);
         DBG_PRINTLN("Buzzer Pasivo: Silencio");
     }
     // Buzzer Activo
     else{
-        digitalWrite(BuzzerPin, (nota->frecuencia > 0));
+        digitalWrite(BuzzerPin, (nota.frecuencia > 0));
         DBG_PRINTLN("Buzzer Activo: nota En reproduccion");
     }
-    
-    //Aumentamos para la siguiente nota y tomamos el tiempo actual
-    actualNotaTime = millis();
-                                                              // Si la reproduccion se pauso y la melodia no es la misma que la anterior
-    ActualNoteEndPlayTime = actualNotaTime + nota->duracion - ((soundIndex != ISoundCount) ? (RetardoStopNoteDuration) : (0));
-    RetardoStopNoteDuration = 0; // Ya que se uso  el retardo, lo eliminamos.
-    // Decimos que la melodia en reproduccion es la del indice.
+
+    // El tiempo final lo tomamos en caso de que haya algun retraso o de que se haya necesitado
+    // reanudar
+    if(reanuda || !mismaMelodia || (int32_t)(now - ActualNoteEndPlayTime) >= (int32_t)durationNota)
+        ActualNoteEndPlayTime = now + durationNota;
+    // Lo tomamos asi solo si la reproduccion salio perfecta sin desvios de tiempo
+    else
+        ActualNoteEndPlayTime += durationNota;
+
+    // Melodia actual que se esta reproduciendo
     ISoundCount = soundIndex;
 
     DBG_VALUE_LN("El index de de la melodia es: ", ISoundCount);
-    DBG_VALUE_LN("El index de la nota tocada es: ", INotesCount[ISoundCount]);
+    DBG_VALUE_LN("El index de la nota tocada es: ", idNotaActual);
 
-    // Actualizamos el indice de melodia siguiente
-    if(INotesCount[ISoundCount] < NotesSize[ISoundCount]) INotesCount[ISoundCount]++;
-    else INotesCount[ISoundCount] = 0;
+    // Seguimos con la siguiente en caso de que no se haya reanudado la nota.
+    // Si se ranudo, esta nota es la que sigue. asi que no aumentariamos
+    if(!reanuda) INotesCount[soundIndex]++;
 }
 
 void SoundSystem::Play(uint8_t indexSound){
@@ -141,6 +162,8 @@ void SoundSystem::Stop(){
     }
 
     // Decimos cuanto tiempo faltaba para que la nota terminara
-    RetardoStopNoteDuration = (millis() - ActualNoteEndPlayTime);
-    ActualNoteEndPlayTime = millis();
+    uint32_t now = millis();
+    int32_t restante = (int32_t)(ActualNoteEndPlayTime - now);
+    if(restante > 0) FaltanteStopNoteDuration = (uint32_t)restante;
+    ActualNoteEndPlayTime = now;
 }

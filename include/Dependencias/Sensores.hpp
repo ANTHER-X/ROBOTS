@@ -30,7 +30,7 @@ struct Motor{
 /*###### Sensores ######*/
 //para Contener los sensores ultrasonicos
 struct UltraSonico{
-	uint8_t  Pin[2];//pines
+	uint8_t Pin[2];//pines
 	bool Cerca;//para ver si la distancia de choque se activa
 	int16_t angle; // Angulo en grados
 };
@@ -58,7 +58,7 @@ enum NotesStorage : uint8_t{
 };
 
 // Notas de sonido
-struct SoundNote {
+struct Nota {
     uint16_t frecuencia; // Frecuencia en Hz (0 para silencio)
     uint16_t duracion;   // Tiempo en ms
 };

@@ -16,11 +16,11 @@ Enum con 3 constantes:
 
 Estructura con 3 variables de tipo `uint8_t` (byte numérico sin signo):
 
-| Campo | Descripción |
-|---|---|
-| `L1` | Pin de control 1. |
-| `L2` | Pin de control 2. |
-| `PWM` | Pin para controlar la velocidad. |
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `L1` | `uint8_t` | Pin de control 1. |
+| `L2` | `uint8_t` | Pin de control 2. |
+| `PWM` | `uint8_t` | Pin para controlar la velocidad. |
 
 ## UltraSonico
 
@@ -28,14 +28,14 @@ Estructura con 3 variables de tipo `uint8_t` (byte numérico sin signo):
 |---|---|---|
 | `Cerca` | `bool` | Indica si se detectó algo dentro del rango de distancia. |
 | `angle` | `uint8_t` | Grados del sensor, útil para robots que usan ultrasonicos como "ojos". |
-| `pines` | `uint8_t[2]` | Pines del sensor: índice `0` = trigger, índice `1` = echo. |
+| `Pin` | `uint8_t[2]` | Pines del sensor: índice `0` = trigger, índice `1` = echo. |
 
 ## Infrarrojo
 
 | Campo | Tipo | Descripción |
 |---|---|---|
-| `pin` | `uint8_t` | Pin del sensor. |
-| `ultimoEstado` | `bool` | Último estado de detección registrado. |
+| `Pin` | `uint8_t` | Pin del sensor. |
+| `Estado` | `bool` | Último estado de detección registrado. |
 | `angle` | `uint8_t` | Ángulo del sensor, para mejor control y precisión en las clases, evitando duplicaciones. |
 
 ## IRSeguidorLinea
@@ -47,7 +47,18 @@ Contiene internamente una estructura `Infrarrojo` (campo `IR`), a la que se agre
 | `IR` | `Infrarrojo` | Estructura base del sensor infrarrojo. |
 | `peso` | `int8_t` (rango: -128 a 127) | Actúa como peso para el sensor IR, debido a la forma en que funciona esta clase. |
 
-## SoundBuzzer
+
+## NotesStorage
+
+Este enum contiene constantes para decir donde se alojan en memoria las notas
+
+| Constante | Descripción |
+| --- | --- |
+| NOTES_RAM | Notas Almacenadas en RAM. |
+| NOTES_FLASH | Notas almacenadas en Flash. |
+
+
+## Nota
 
 | Campo | Tipo | Descripción |
 |---|---|---|
@@ -55,6 +66,13 @@ Contiene internamente una estructura `Infrarrojo` (campo `IR`), a la que se agre
 | `duracion` | `uint16_t` | Duración de la nota. |
 
 Puede usarse, por ejemplo, para emitir sonidos al detectar algo, como en el seguidor de línea.
+
+
+## BuzzerType
+| Constante | Descripción |
+| --- | --- |
+| BUZZER_ACTIVE | Buzzer tipo activo. |
+| BUZZER_PASSIVE | Buzzer tipo pasivo. |
 
 ## ActivateUS
 

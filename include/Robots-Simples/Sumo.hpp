@@ -36,7 +36,7 @@ protected:
 	uint8_t MusicIndex[3] = {0};
 	SoundSystem* Sound = nullptr;
 
-	void GetIndexSound(const SoundNote* const* melody, uint8_t index){ if(Sound != nullptr) MusicIndex[index] = Sound->GetIndexMusic(melody); }
+	void GetIndexSound(const Nota* const* melody, uint8_t index){ if(Sound != nullptr) MusicIndex[index] = Sound->GetIndexMusic(melody); }
 
 	//metodos privados
 	//captura la distancia en CM
@@ -52,10 +52,8 @@ protected:
 
 	virtual void Extras(){}
 
-	virtual void MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &atUsed, bool &usUsed);
+	virtual void MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &usUsed);
 	virtual void MoverPorIR(unsigned long &timer, bool &used, unsigned long timerIR_Uso);
-
-	virtual void FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAccion, unsigned long timeAtaque);
 	
 	virtual bool ExistSUS(int16_t angle);
 	virtual bool ExistIR(int16_t angle);
@@ -69,9 +67,9 @@ public:
 
 	// Sonido
 	inline void AddSoundSystem(SoundSystem* soundSystem){Sound = soundSystem; }
-	void SetAtackSound(const SoundNote* const* melody){GetIndexSound(melody, 0); }
-	void SetBackSound(const SoundNote* const* melody){GetIndexSound(melody, 1); }
-	void SetIRSound(const SoundNote* const* melody){GetIndexSound(melody, 2); }
+	void SetAtackSound(const Nota* const* melody){GetIndexSound(melody, 0); }
+	void SetBackSound(const Nota* const* melody){GetIndexSound(melody, 1); }
+	void SetIRSound(const Nota* const* melody){GetIndexSound(melody, 2); }
 
 
 	virtual void Camina(unsigned int TimeMinuts = 0) override;

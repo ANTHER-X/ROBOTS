@@ -45,7 +45,7 @@ void Sumo::UsarAllSUS(){
 //toma el estado de los infrarrojos
 void Sumo::ActivaIR(Infrarrojo &INF){
     #if USE_IR == 1
-        INF.Estado = digitalRead(INF.Pin) == LOW;
+        INF.Estado = (digitalRead(INF.Pin) == IR_ACTIVATE);
         DBG_VALUE("Pin Usado: ", INF.Pin);
         DBG_VALUE_LN(". Estado tomado: ", INF.Estado);
     #endif
@@ -66,77 +66,88 @@ void Sumo::UsaAllIR(){
 }
 
 
-void Sumo::MoverPorSUS(unsigned long &timer, unsigned long &timerUS, bool &atUsed, bool &usUsed){
+void Sumo::MoverPorSUS(unsigned long &timer, unsigned long &timerUS, bool &usUsed){
+    // Regresamos si no hay Ultra sonicos o si esta girando por IR
+    if(UltraSonicoCount < 1) return;
+
     for(uint8_t i=0; i<UltraSonicoCount; i++){
 
-        //Si estamos en el US de delante y hay algo en el punto de ataque y aun no ataca, atacamos
-        if(!atUsed && UltraSonicos[i].angle == 0 && UltraSonicos[i].Cerca){
-            DBG_PRINTLN("\n\nATACANDO.\n\n");
-            ConfigVelocidad(*Motores, CantidadMotores, Vel);
-            MDelAtrs(*Motores, CantidadMotores, true);
-            timer = millis(); //marcamos el inicio del ataque
-            atUsed = true; //decimos que atacamos
-            // Reproducimos sonido de ataque
-            Sound->Play(MusicIndex[0]);
-            return;
+        // Si detecta algo
+        if(UltraSonicos[i].Cerca){
+            //Si estamos en el US de delante y hay algo en el punto de ataque, atacamos
+            if(UltraSonicos[i].angle == 0){
+                DBG_PRINTLN("\n\nATACANDO.\n\n");
+                ConfigVelocidad(*Motores, CantidadMotores, Vel);
+                MDelAtrs(*Motores, CantidadMotores, true);
+                usUsed = false; // Decimos que no gire
+                // Reproducimos sonido de ataque
+                Sound->Play(MusicIndex[0]);
+                return;
+            }
+
+            // Si no vamos a detectar los demas sensores
+            if (!usUsed){
+                DBG_PRINTLN("\nGirando.\n");
+
+                // Configuramos la velodicidad de giro y giramos
+                ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
+                MDerIzq(*Motores, CantidadMotores, !(UltraSonicos[i].angle > 0));
+
+                timer = millis(); //marcamos el inicio del giro
+                usUsed = true; //decimos que estamos girando
+                // Damos el tiempo de giro de acuerdo al angulo que tiene el sensor
+                timerUS = (abs(UltraSonicos[i].angle) * TGiro) / 180;
+
+                break;
+            }
         }
-
-        // Si no vamos a detectar los demas sensores
-        if (!usUsed && !atUsed && UltraSonicos[i].Cerca){
-            DBG_PRINTLN("\nGirando.\n");
-
-            // Configuramos la velodicidad de giro y giramos
-            ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
-            MDerIzq(*Motores, CantidadMotores, !(UltraSonicos[i].angle > 0));
-
-            timer = millis(); //marcamos el inicio del ataque
-            usUsed = true; //decimos que estamos girando
-
-            // Damos el tiempo de giro de acuerdo al angulo que tiene el sensor
-            timerUS = (abs(UltraSonicos[i].angle) * TGiro) / 180;
-
-            return;
-        }
+        
     }
+    
+    // Detenemos cualquier sonido, en este punto, no debe estar atacando
 
     // En caso de que este termine de girar, paramos todo
     if(usUsed && (millis() - timer) >= timerUS){
-        DBG_PRINTLN("Giro Finalizado");
+        DBG_PRINTLN("Giro de SUS Finalizado");
         usUsed = false;
         MStop(*Motores, CantidadMotores);
     }
+    else if(!usUsed){
+        MDerIzq(*Motores, CantidadMotores, RGiro);
+        Sound->Stop();
+        DBG_PRINTLN("GIRO ALEATORIO");
+    }
+
 }
 
 
 void Sumo::MoverPorIR(unsigned long &timer, bool &used, unsigned long timerIR_Uso){
     #if USE_IR == 1
+        if(InfrarrojoCount < 1) return;
+
         for(uint8_t i=0; i<InfrarrojoCount; i++){
-            
-            // Si los IR esta delante o atras el IR no giramos, sino que movemos hacia atras o adelante
 
             //si detecta el borde giramos
             if(!used && Infrarrojos[i].Estado == IR_ACTIVATE){
                 DBG_PRINTLN("\n\nNOS SALIMOS!!!.\n\n");
-                timer = millis(); //iniciamos donde comenzo hacia atras
-                used = true;//decimos que se mueve hacia atras
 
                 // Si los IR detectan salida por delante, nos movemos hacia atras
-                if(Infrarrojos[i].angle > (-21) || Infrarrojos[i].angle < 21){
-
+                if( (Infrarrojos[i].angle > (-21) || Infrarrojos[i].angle < 21) ){
                     MDelAtrs(*Motores, CantidadMotores, false);
-                    timerIR_Uso = TRec;
                     // Reproducimos sonido de back
                     Sound->Play(MusicIndex[1]);
-                    break;
+                    return;
                 }
 
                 // Contrario, atras -> Mueves adelante
                 if(Infrarrojos[i].angle > 159 || Infrarrojos[i].angle < (-159)){
-
                     MDelAtrs(*Motores, CantidadMotores, true);
-                    timerIR_Uso = TRec;
-                    break;
+                    Sound->Play(MusicIndex[2]); // Sonido de ataque
+                    return;
                 }
+
+                timer = millis(); // Iniciamos el contador desde donde gira
+                used = true; // Decimos que esta girando
 
                 ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
                 MDerIzq(*Motores, CantidadMotores, (Infrarrojos[i].angle > 0)); // Giramos de acuerdo a donde esta
@@ -151,38 +162,13 @@ void Sumo::MoverPorIR(unsigned long &timer, bool &used, unsigned long timerIR_Us
 
         // Si termina de girar paramos y detenemos todo
         if(used && (millis() - timer) >= timerIR_Uso){
-            DBG_PRINTLN("Giro Finalizado");
+            DBG_PRINTLN("Giro de IR Finalizado");
             used = false;
             MStop(*Motores, CantidadMotores);
             Sound->Stop();
             Sound->ResetSounds();
         }
     #endif
-}
-
-
-void Sumo::FinAtaque(bool &ataque, bool &infAccion, unsigned long timeInfAccion, unsigned long timeAtaque){
-    //si ya no hay ataque y ya no vamos a retroceder (o que se haya usado algun infrarrojo) volvemos a girar
-    #if USE_IR == 1
-        if(!ataque && infAccion && (millis() - timeInfAccion) > TRec){
-            ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
-            MDerIzq(*Motores, CantidadMotores, RGiro);
-            infAccion = false;
-            ataque = false;
-            Sound->Stop();
-            DBG_PRINTLN("Buscando");
-        }
-    #endif
-
-    //si no detectamos la barrera y ya paso el tiempo de accion del ataque, detenemos el ataque
-    if(ataque && (millis() - timeAtaque) > TRec){
-        ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
-        MDerIzq(*Motores, CantidadMotores, RGiro);
-        ataque = false;
-        Sound->Stop();
-        Sound->ResetSounds();
-        DBG_PRINTLN("\n\nATAQUE FINALIZADO\n\n");
-    }
 }
 
 //Los Ultrasonicos para los ojos
@@ -279,21 +265,21 @@ void Sumo::Camina(unsigned int activeTimeMillis){
 
         //Para accionar los USU
         unsigned long InicioUS = 0, usAccion = 0;
-        bool ataque = false, usDetected = false;
+        bool usDetected = false;
 
         unsigned int initTime = activeTimeMillis ? millis(): 0;
 
         ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
         MDerIzq(*Motores, CantidadMotores, RGiro); //giramos
 
+        /* Piorizamos el movimiento por IR, si se esta, dejamos que intente
+        no salirse*/ 
         do{
-            //Movimiento completo del robot
             UsaAllIR();
-            MoverPorIR(InicioIR, Atras, TimeIRUsed);
-            UsarAllSUS();
+            if(!Atras) UsarAllSUS();
             Extras();
-            MoverPorSUS(InicioUS, usAccion, ataque, usDetected);
-            FinAtaque(ataque, Atras, InicioIR, InicioUS);
+            MoverPorIR(InicioIR, Atras, TimeIRUsed);
+            if(!Atras) MoverPorSUS(InicioUS, usAccion, usDetected);
 
         }while( ( activeTimeMillis == 0 || (initTime > 0 && (millis() - initTime < activeTimeMillis))) );
     }

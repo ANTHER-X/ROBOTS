@@ -32,18 +32,19 @@ void SeguidorLinea::AddIRColicion(uint8_t pin){
 }
 
 // Iniciamos el sonido de colicion
-void SeguidorLinea::StarSoundColicion(bool isColitioned){
+void SeguidorLinea::StartSoundColicion(bool isColitioned){
     // Si no ah colicionado detenemos sonido si es que se reprodujo alguno
     if(!isColitioned){
-        if(Sound != nullptr) Sound->Stop();
+        if(Sound != nullptr){
+            Sound->Stop();
+            Sound->ResetSounds();
+        }
         DBG_PRINTLN("No se ha colicionado");
-        Sound->Stop();
-        Sound->ResetSounds();
         return;
     }
 
     // Si se ah colicionado con algo reproducimos melodia
-    Sound->Play();
+    if(Sound != nullptr) Sound->Play();
 }
 
 
@@ -101,6 +102,19 @@ void SeguidorLinea::InitStatsIRs(){
 
 }
 
+bool SeguidorLinea::Colition(){
+    //Si coliciono con algo paramos, damos el sonido si es que hagrega y salimos
+    if(IRColicioner.Pin != 0 && IRColicion() == IR_ACTIVATE){
+        DBG_PRINTLN("Colision detectada, deteniendo...");
+        MStop(*Motores, CantidadMotores);
+        colitioned = true;
+    }
+    else colitioned = false; 
+
+    //Reproducimos o no las notas musicales dependiendo de la colicion
+    StartSoundColicion(colitioned);
+    return colitioned;
+}
 
 // Actualizamos el estado a lectura de los IRs
 void SeguidorLinea::AccionaAllIR(){
@@ -166,18 +180,6 @@ void SeguidorLinea::ConfigVelocidad(Motor* M, uint8_t size,uint8_t vDer, uint8_t
 }
 
 void SeguidorLinea::MoveMotorsForIR(){
-    bool colitioned = false;
-
-    //Si coliciono con algo paramos, damos el sonido si es que hagrega y salimos
-    if(IRColicioner.Pin != 0 && IRColicion() == IR_ACTIVATE){
-        DBG_PRINTLN("Colision detectada, deteniendo...");
-        MStop(*Motores, CantidadMotores);
-        colitioned = true;
-    }
-
-    //Reproducimos o no las notas musicales dependiendo de la colicion
-    StarSoundColicion(colitioned);
-    if(colitioned) return;
 
     //Si los lados quedaron iguales, vamos hacia adelante
     if(pDer == pIzq){
@@ -212,8 +214,8 @@ void SeguidorLinea::Camina(unsigned int activeTimeMillis){
 
     unsigned int initTime = activeTimeMillis ? millis(): 0;
     do {
-        //Accionamos todos los IR
-        AccionaAllIR();
+        if(Colition()) continue; // So coliciona no hacemos nada
+        AccionaAllIR(); // Romamos los valores de los IR
         PotenciaEquilibrio();
         //Movemos
         MoveMotorsForIR();

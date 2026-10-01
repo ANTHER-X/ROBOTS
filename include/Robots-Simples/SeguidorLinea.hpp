@@ -18,8 +18,10 @@ protected:
     IRSeguidorLinea irs[MAXIRSEGUIDOR];
     uint8_t tamIrs = 0, vMax;
     unsigned long timeMove;
-    bool isPar;
-    short centro, pIzq = 0, pDer = 0;
+    bool isPar; // Ver si la cantidad es par o impar en los IRs y determinar el centro
+    short centro, pIzq = 0, pDer = 0; // Dice el IR central, asi como los pesos totales para derecha e izquierda
+
+    bool colitioned;
 
     //Cosas para coliciones
     //IR para detectar coliciones
@@ -36,10 +38,13 @@ protected:
 
     //Para poder saber si el sensor de colision se activo
     inline bool IRColicion(){return (digitalRead(IRColicioner.Pin) == IR_ACTIVATE); }
-    void StarSoundColicion(bool isColitioned);
+    void StartSoundColicion(bool isColitioned);
 
     //Iniciamos las Stats de los IRs
     void InitStatsIRs();
+
+    // Para ver la colicion
+    bool Colition();
 
     //Para no ocultar el metodo de la clase base y evitar errores de metodos no existentes
     using Robot::ConfigVelocidad;

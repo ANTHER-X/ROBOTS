@@ -7,8 +7,8 @@
 
 /*Base Class*/
 #include <Arduino.h>
-#include "../Config.hpp"
-#include "../Dependencias/Sensores.hpp"
+#include <Config.hpp>
+#include <Dependencias/Sensores.hpp>
 
 #pragma once
 

@@ -8,6 +8,13 @@ ROBOTS es una librería en C++ para proyectos de robótica básica embebida. Per
 
 La librería está pensada para ser modificable y extensible según las necesidades del proyecto.
 
+## Extensiones
+
+La librería incluye una clase tipo módulo opcional de sonido para los robots. Esta clase da la funcionalidad completa para poder reproducir melodías en formato monocanal mediante un solo buzzer.
+
+Además, existe un proyecto complementario para generar las notas: [AnMidiFormat](https://github.com/ANTHER-X/AnMidiFormat). Aunque no es una extensión oficial de esta librería, el formato de notas que maneja es prácticamente idéntico al que usa la clase módulo de sonido. Esta aplicación CLI incluye toda la información necesaria para utilizarla.
+
+
 ## Arquitecturas soportadas
 
 - AVR
