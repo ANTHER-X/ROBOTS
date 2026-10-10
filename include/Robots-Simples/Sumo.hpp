@@ -14,6 +14,12 @@
 #ifndef SUMO_HPP
 #define SUMO_HPP
 
+#define SUMO_NOSTATE 0
+#define SUMO_IRACTION 1
+#define SUMO_SUSACTION 2
+#define SUMO_ATTACK 3
+#define SUMO_IRACTDELATR 4
+
 class Sumo : public Robot{
 protected:
 	
@@ -36,6 +42,19 @@ protected:
 	uint8_t MusicIndex[3] = {0};
 	SoundSystem* Sound = nullptr;
 
+	// Datos los cuales indican el tipo de estado del sumo
+	/* 0 = Nada
+	 * 1 = IRAction
+	 * 2 = SusAction
+	 * 3 = Atack
+	 * 4 = IR Salida atras/delante
+	 */
+	uint8_t SumoState = 0;
+
+	// Tiempos de acciones
+	uint64_t TimeSUS = 0, ActualTime = 0, TimeIR = 0;
+
+	// Para uso interno para la reproduccion de melodias
 	void GetIndexSound(const Nota* const* melody, uint8_t index){ if(Sound != nullptr) MusicIndex[index] = Sound->GetIndexMusic(melody); }
 
 	//metodos privados
@@ -52,8 +71,8 @@ protected:
 
 	virtual void Extras(){}
 
-	virtual void MoverPorSUS(unsigned long &timer,unsigned long &timerUS, bool &usUsed);
-	virtual void MoverPorIR(unsigned long &timer, bool &used, unsigned long timerIR_Uso);
+	virtual void MoverPorSUS();
+	virtual void MoverPorIR();
 	
 	virtual bool ExistSUS(int16_t angle);
 	virtual bool ExistIR(int16_t angle);

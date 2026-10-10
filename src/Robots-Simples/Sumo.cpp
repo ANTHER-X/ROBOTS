@@ -46,7 +46,7 @@ void Sumo::UsarAllSUS(){
 void Sumo::ActivaIR(Infrarrojo &INF){
     #if USE_IR == 1
         INF.Estado = (digitalRead(INF.Pin) == IR_ACTIVATE);
-        DBG_VALUE("Pin Usado: ", INF.Pin);
+        DBG_VALUE("Pin IR Usado: ", INF.Pin);
         DBG_VALUE_LN(". Estado tomado: ", INF.Estado);
     #endif
 }
@@ -66,7 +66,7 @@ void Sumo::UsaAllIR(){
 }
 
 
-void Sumo::MoverPorSUS(unsigned long &timer, unsigned long &timerUS, bool &usUsed){
+void Sumo::MoverPorSUS(){
     // Regresamos si no hay Ultra sonicos o si esta girando por IR
     if(UltraSonicoCount < 1) return;
 
@@ -79,80 +79,80 @@ void Sumo::MoverPorSUS(unsigned long &timer, unsigned long &timerUS, bool &usUse
                 DBG_PRINTLN("\n\nATACANDO.\n\n");
                 ConfigVelocidad(*Motores, CantidadMotores, Vel);
                 MDelAtrs(*Motores, CantidadMotores, true);
-                usUsed = false; // Decimos que no gire
+                SumoState = SUMO_ATTACK; // Decimos que no gire
                 // Reproducimos sonido de ataque
                 Sound->Play(MusicIndex[0]);
                 return;
             }
 
             // Si no vamos a detectar los demas sensores
-            if (!usUsed){
+            if (SumoState != SUMO_ATTACK){
                 DBG_PRINTLN("\nGirando.\n");
 
                 // Configuramos la velodicidad de giro y giramos
                 ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
                 MDerIzq(*Motores, CantidadMotores, !(UltraSonicos[i].angle > 0));
 
-                timer = millis(); //marcamos el inicio del giro
-                usUsed = true; //decimos que estamos girando
+                ActualTime = millis(); //marcamos el inicio del giro
+                SumoState = SUMO_SUSACTION; //decimos que estamos girando
                 // Damos el tiempo de giro de acuerdo al angulo que tiene el sensor
-                timerUS = (abs(UltraSonicos[i].angle) * TGiro) / 180;
-
+                TimeSUS = (abs(UltraSonicos[i].angle) * TGiro) / 180;
                 break;
             }
         }
         
     }
-    
-    // Detenemos cualquier sonido, en este punto, no debe estar atacando
 
     // En caso de que este termine de girar, paramos todo
-    if(usUsed && (millis() - timer) >= timerUS){
+    if( (SumoState == SUMO_SUSACTION) && ( (millis() - ActualTime) >= TimeSUS )){
         DBG_PRINTLN("Giro de SUS Finalizado");
-        usUsed = false;
+        SumoState = SUMO_NOSTATE;
         MStop(*Motores, CantidadMotores);
     }
-    else if(!usUsed){
+    // Si ya no esta atacando ni haciendo otra cosa, pausamoe el movimiento y el sonido de ataque
+    else if( SumoState == SUMO_ATTACK ){
+        SumoState = SUMO_NOSTATE;
         MDerIzq(*Motores, CantidadMotores, RGiro);
         Sound->Stop();
-        DBG_PRINTLN("GIRO ALEATORIO");
     }
 
 }
 
 
-void Sumo::MoverPorIR(unsigned long &timer, bool &used, unsigned long timerIR_Uso){
+void Sumo::MoverPorIR(){
     #if USE_IR == 1
         if(InfrarrojoCount < 1) return;
 
         for(uint8_t i=0; i<InfrarrojoCount; i++){
 
             //si detecta el borde giramos
-            if(!used && Infrarrojos[i].Estado == IR_ACTIVATE){
+            if(SumoState != SUMO_IRACTION && Infrarrojos[i].Estado == IR_ACTIVATE){
                 DBG_PRINTLN("\n\nNOS SALIMOS!!!.\n\n");
 
                 // Si los IR detectan salida por delante, nos movemos hacia atras
                 if( (Infrarrojos[i].angle > (-21) || Infrarrojos[i].angle < 21) ){
                     MDelAtrs(*Motores, CantidadMotores, false);
                     // Reproducimos sonido de back
+                    SumoState = SUMO_IRACTDELATR;
                     Sound->Play(MusicIndex[1]);
                     return;
                 }
 
                 // Contrario, atras -> Mueves adelante
                 if(Infrarrojos[i].angle > 159 || Infrarrojos[i].angle < (-159)){
-                    MDelAtrs(*Motores, CantidadMotores, true);
+                    MDelAtrs(*Motores, CantidadMotores, true/* u */);
                     Sound->Play(MusicIndex[2]); // Sonido de ataque
+                    SumoState = SUMO_IRACTDELATR;
                     return;
                 }
 
-                timer = millis(); // Iniciamos el contador desde donde gira
-                used = true; // Decimos que esta girando
+                ActualTime = millis(); // Iniciamos el contador desde donde gira
+                SumoState = SUMO_IRACTION; // Decimos que esta girando
 
                 ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
                 MDerIzq(*Motores, CantidadMotores, (Infrarrojos[i].angle > 0)); // Giramos de acuerdo a donde esta
                 // Sacamos el timer para ver el tiempo de giro
-                timerIR_Uso = (abs(UltraSonicos[i].angle) * TGiro) / 180;
+                TimeIR = (abs(UltraSonicos[i].angle) * TGiro) / 180;
                 
                 // Reproducimos sonido en caso de que se salga
                 Sound->Play(MusicIndex[2]);
@@ -161,13 +161,20 @@ void Sumo::MoverPorIR(unsigned long &timer, bool &used, unsigned long timerIR_Us
         }
 
         // Si termina de girar paramos y detenemos todo
-        if(used && (millis() - timer) >= timerIR_Uso){
+        if(SumoState == SUMO_IRACTION && (millis() - ActualTime) >= TimeIR){
             DBG_PRINTLN("Giro de IR Finalizado");
-            used = false;
-            MStop(*Motores, CantidadMotores);
+            SumoState = SUMO_NOSTATE;   
+            MDerIzq(*Motores, CantidadMotores, RGiro);
             Sound->Stop();
             Sound->ResetSounds();
         }
+        // Si no tiene estado, (sale por atras o delante) detenemos todo
+        else if(SumoState == SUMO_IRACTDELATR){
+            SumoState = SUMO_NOSTATE;
+            MDerIzq(*Motores, CantidadMotores, RGiro);
+            Sound->Stop();
+        }
+
     #endif
 }
 
@@ -254,32 +261,23 @@ Sumo::Sumo(uint8_t Velocidad, uint8_t VelocidadGiro, uint8_t DistAtaqCM, uint16_
 void Sumo::Camina(unsigned int activeTimeMillis){
     if(CantidadMotores != 0){
 
-        //Movimiento aleatorio
-        RGiro = random(0,2);
-        
-        //variables locales que se que solo se inician minimo una vez
-        
-        //para accionar los IR
-        unsigned long TimeIRUsed = 0, InicioIR = 0;
-        bool Atras = false;
+        // Inicializacion basica
+        TimeIR = TimeSUS = 0;
+        ActualTime = millis();
 
-        //Para accionar los USU
-        unsigned long InicioUS = 0, usAccion = 0;
-        bool usDetected = false;
-
-        unsigned int initTime = activeTimeMillis ? millis(): 0;
+        unsigned int initTime = activeTimeMillis ? ActualTime: 0;
 
         ConfigVelocidad(*Motores, CantidadMotores, VelGiro);
         MDerIzq(*Motores, CantidadMotores, RGiro); //giramos
 
-        /* Piorizamos el movimiento por IR, si se esta, dejamos que intente
-        no salirse*/ 
+        /* Priorizamos el movimiento por IR*/ 
         do{
+            RGiro = random(0,2);
             UsaAllIR();
-            if(!Atras) UsarAllSUS();
+            if( (SumoState != SUMO_IRACTION) && (SumoState != SUMO_IRACTDELATR) ) UsarAllSUS();
             Extras();
-            MoverPorIR(InicioIR, Atras, TimeIRUsed);
-            if(!Atras) MoverPorSUS(InicioUS, usAccion, usDetected);
+            MoverPorIR();
+            if((SumoState != SUMO_IRACTION) && (SumoState != SUMO_IRACTDELATR)) MoverPorSUS();
 
         }while( ( activeTimeMillis == 0 || (initTime > 0 && (millis() - initTime < activeTimeMillis))) );
     }
